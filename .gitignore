@@ -1,0 +1,10 @@
+# Secrets and local credentials (never committed; see CLAUDE.md safety rules)
+.env
+.env.*
+!.env.example
+*.p8
+*.pem
+*.key
+
+# Personal Claude Code settings (shared settings live in .claude/settings.json)
+.claude/settings.local.json
