@@ -18,10 +18,16 @@ This creates `.venv` with the developer tools (pre-commit, pytest). Then install
 uv run pre-commit install
 ```
 
-Every commit now runs ruff, yamllint, sqlfluff (Snowflake dialect), gitleaks, and basic file checks, and commits to `main` are refused. To check the whole repository at any time:
+Every commit now runs ruff, yamllint, sqlfluff (Snowflake dialect), actionlint, gitleaks, and basic file checks, and commits to `main` are refused. To check the whole repository at any time:
 
 ```bash
 uv run pre-commit run --all-files
+```
+
+The `ci-lint` workflow runs the same hooks on every pull request and on `main`, scans the full git history for secrets, and checks that the PR title follows Conventional Commits. The history scan can also be run locally:
+
+```bash
+uv run pre-commit run gitleaks-history --hook-stage manual
 ```
 
 For local settings, copy `.env.example` to `.env` and fill in the DEV values. `.env` is gitignored; never put TEST or PROD credentials in it.
