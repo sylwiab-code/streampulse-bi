@@ -2,7 +2,7 @@
 
 End-to-end BI portfolio project for StreamPulse, a fictional subscription video-on-demand (OTT) service operating in Poland, Germany, Sweden, and Norway. Synthetic data flows through Snowflake, dbt, and Airflow into Power BI and Microsoft Fabric, with CI/CD, automated tests, and guarded AI-assisted development.
 
-**Status:** Phase 0 (foundations) in progress. The phases and their Definition of Done are in [PLAN.md](PLAN.md); design decisions are in [docs/adr](docs/adr/README.md).
+**Status:** Phase 0 (foundations) complete: `main` is protected by a ruleset, and a pull request with a failing lint cannot be merged ([demo PR #8](https://github.com/sylwiab-code/streampulse-bi/pull/8)). The phases and their Definition of Done are in [PLAN.md](PLAN.md); design decisions are in [docs/adr](docs/adr/README.md).
 
 ## Local development
 
