@@ -92,7 +92,7 @@ AI layer: Claude Code (CLAUDE.md, hooks), Power BI Modeling MCP server,
 
 ## 5. Environment and Licensing Options
 
-### Power BI / Fabric (open decision, resolved in Phase 0)
+### Power BI / Fabric (open decision, resolved before Phase 4)
 
 | Option | What you get | Pros | Cons |
 |---|---|---|---|
@@ -105,12 +105,14 @@ AI layer: Claude Code (CLAUDE.md, hooks), Power BI Modeling MCP server,
 
 **Recommendation:** A if eligible, otherwise B. Use C for Phase 8 if it fits.
 
+**Decision gate:** the option must be chosen before Phase 4 starts and recorded in ADR-008. It blocks the Power BI refresh task (Phase 4), the semantic model (Phase 5), deployment (Phase 7: fabric-cicd needs workspaces on a capacity and a service principal), and Phases 8–9. A Fabric trial alone cannot cover Phases 5–9. Phases 0–3 do not depend on it.
+
 ### Other services
 
 | Service | Option |
 |---|---|
-| Snowflake | 30-day trial (start once the generator is ready), then pay-as-you-go Standard. X-Small warehouses, auto-suspend 60s, resource monitors. Verify current trial terms. |
-| GitHub | Free. Public repo at the end, private during build. Actions minutes and GitHub Pages. |
+| Snowflake | 30-day trial on Enterprise Edition (start once the generator is ready), then pay-as-you-go Enterprise. Enterprise is required for masking policies (Phase 2, Phase 10). X-Small warehouses, auto-suspend 60s, resource monitors. Verify current trial terms. |
+| GitHub | Free. Public repo from day one (ADR-001): rulesets, environment approvals, and secret scanning push protection are free for public repos. Actions minutes and GitHub Pages. |
 | Airflow | Astro CLI locally (Docker). No cloud cost. |
 | Tabular Editor 2 CLI, PBI Inspector | Free, used in CI. |
 
@@ -123,7 +125,7 @@ AI layer: Claude Code (CLAUDE.md, hooks), Power BI Modeling MCP server,
 ## 6. Repository Structure
 
 ```
-streampulse/
+streampulse-bi/
 ├─ README.md
 ├─ PLAN.md
 ├─ CLAUDE.md
@@ -154,14 +156,14 @@ Each phase ends with a merged PR (or a series of PRs), updated docs, and green C
 
 ### Phase 0 — Foundations
 
-- Repo, branch protection (`main` protected, PR required, status checks).
+- Public repo; `main` protected by a repository ruleset stored in `.github/rulesets/` (PR required, status checks, no bypass).
 - PR template, review checklist, CODEOWNERS, issue templates, labels.
-- Conventional commits; pre-commit with ruff, sqlfluff, yamllint, and a secret scan.
-- Python toolchain with uv; `.env.example`; secrets in GitHub Environments only.
-- Initial CI: lint workflow.
+- Conventional Commits (squash merge, PR title checked in CI); pre-commit with ruff, sqlfluff, yamllint, actionlint, and gitleaks.
+- Python toolchain with uv (Python 3.12); `.env.example`; secrets in GitHub Environments only (environments are created in Phase 2, when the first secret exists).
+- Initial CI: `ci-lint` (pre-commit, gitleaks history scan, PR title check) and `ci-python` (pytest).
 - `CLAUDE.md`, `.claude/` hooks (see Phase 10, minimal version now).
 - ADR template; ADR-001 "Overall architecture and tool choices".
-- Resolve the licensing option (Section 5).
+- The licensing option (Section 5) is resolved later, before Phase 4.
 
 **DoD:** a PR with a failing lint is blocked; ADR-001 is merged.
 
@@ -171,7 +173,7 @@ Each phase ends with a merged PR (or a series of PRs), updated docs, and green C
 - Realistic behavior: seasonality, a price increase event with a churn spike, payment-failure dunning, reactivations, trial abuse, regional differences.
 - Data quality defects on purpose: duplicates, late-arriving events, null keys, a schema change mid-history.
 - Modes: full history backfill and daily incremental batch. Deterministic with a seed.
-- Output: Parquet, uploaded to a Snowflake stage (PUT) by a loader module.
+- Output: Parquet files on local disk. Uploading them to a Snowflake stage moves to Phase 2, where the stage is created.
 - pytest: distributions, referential integrity, determinism.
 
 **DoD:** `generate --days 1` and backfill both work; tests pass in CI.
@@ -182,6 +184,7 @@ Each phase ends with a merged PR (or a series of PRs), updated docs, and green C
 - Roles: `LOADER`, `TRANSFORMER`, `REPORTER`, `AI_READONLY`, `DEPLOYER`; functional and access role hierarchy.
 - Warehouses per workload with auto-suspend; resource monitors.
 - Stages, file formats, RAW tables, grants, masking policy on email and name (visible only to privileged roles).
+- Loader module (moved from Phase 1): uploads the generated Parquet files to the RAW stage (PUT).
 - Service users with key-pair authentication.
 - Liquibase: changelog structure, contexts per environment, rollback blocks, `updateSQL` preview.
 - ADR-003: "Liquibase for platform objects, dbt for transformations" (where the boundary is and why).
@@ -242,7 +245,7 @@ Each phase ends with a merged PR (or a series of PRs), updated docs, and green C
 
 - Auth: GitHub OIDC federated credentials to Entra service principal (no stored secrets where possible); Snowflake key pair in GitHub Environments.
 - PR workflows:
-  - `ci-python`: ruff, pytest.
+  - `ci-python`: pytest (linting runs only in `ci-lint`, via pre-commit).
   - `ci-dbt`: slim CI (`state:modified+`, defer to prod manifest), PR-specific schema, cleanup on close.
   - `ci-liquibase`: validate and `updateSQL` preview posted as a PR comment.
   - `ci-semantic`: Tabular Editor 2 BPA on TMDL, PBI Inspector on reports.
@@ -250,6 +253,7 @@ Each phase ends with a merged PR (or a series of PRs), updated docs, and green C
 - Post-deploy tests: pytest DAX reconciliation (semantic model totals vs Snowflake via executeQueries API), smoke tests on refresh.
 - PowerShell: workspace provisioning and access management (roles assigned from a config file, idempotent).
 - Rollback approach documented in a runbook.
+- ADR-007: "Deployment strategy" (fabric-cicd vs deployment pipelines).
 
 **DoD:** a change to one measure flows from PR to Prod with tests and approval; reconciliation test catches a planted error.
 
@@ -304,7 +308,6 @@ Each phase ends with a merged PR (or a series of PRs), updated docs, and green C
 - README: problem, architecture diagram, key decisions (links to ADRs), screenshots, how to run.
 - Demo video (5–8 min): pipeline run, PR to Prod, RLS, MCP in action, Direct Lake comparison.
 - Case study write-up (`docs/case-study.md`): challenges, trade-offs, measurements, lessons learned.
-- Make repo public.
 
 ## 8. Authenticity Guidelines (avoid a "vibe-coded" look)
 
@@ -320,8 +323,10 @@ Each phase ends with a merged PR (or a series of PRs), updated docs, and green C
 | Risk | Mitigation |
 |---|---|
 | Tenant or license unavailable or expires | Option B as fallback; keep all assets in Git so the tenant can be rebuilt by CI |
-| Snowflake trial ends mid-project | Start trial after Phase 1; resource monitor; move to pay-as-you-go |
+| Snowflake trial ends mid-project | Start trial after Phase 1; resource monitor; move to pay-as-you-go Enterprise |
 | Fabric trial window too short | Prepare Phase 8 code before starting the trial |
+| Licensing not decided in time | Decision gate before Phase 4 (Section 5); Phases 0–3 do not depend on it |
+| Secret committed to the public repo | gitleaks in pre-commit and CI, GitHub push protection; if it happens, rotate the secret at once and write a postmortem |
 | Scope creep | Each phase has a DoD; extras go to a `backlog` label |
 | Cost overrun | Auto-suspend, F2 pause automation, resource monitors |
 
@@ -336,3 +341,4 @@ Each phase ends with a merged PR (or a series of PRs), updated docs, and green C
 | 005 | Snowflake to Fabric integration (mirroring vs Iceberg) |
 | 006 | Safe use of AI agents |
 | 007 | Deployment strategy (fabric-cicd vs deployment pipelines) |
+| 008 | Power BI and Fabric licensing |
