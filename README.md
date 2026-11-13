@@ -35,3 +35,15 @@ Run the tests with `uv run pytest`; the `ci-python` workflow runs them on every 
 `.claude/` holds the shared Claude Code settings and a command guard for AI-assisted work; see [docs/ai-workflow.md](docs/ai-workflow.md#guardrails).
 
 For local settings, copy `.env.example` to `.env` and fill in the DEV values. `.env` is gitignored; never put TEST or PROD credentials in it.
+
+## Contributing
+
+Every change goes through a pull request. Reviews follow [docs/standards/review-checklist.md](docs/standards/review-checklist.md).
+
+`main` is protected by the ruleset in [.github/rulesets/main.json](.github/rulesets/main.json): the `pre-commit`, `gitleaks`, `pr-title`, and `pytest` checks must pass, merges are squash-only with linear history, force pushes and deletion are blocked, and nobody can bypass the rules. The file is applied with the GitHub API:
+
+```bash
+gh api --method POST repos/sylwiab-code/streampulse-bi/rulesets --input .github/rulesets/main.json
+```
+
+To change the rules, edit the file and send it with `--method PUT` to `repos/sylwiab-code/streampulse-bi/rulesets/<id>`.

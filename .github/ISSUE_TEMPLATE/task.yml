@@ -1,0 +1,20 @@
+name: Task
+description: Planned work, usually one pull request
+labels: [task]
+body:
+  - type: input
+    id: phase
+    attributes:
+      label: Phase
+      description: The PLAN.md phase, for example "Phase 1".
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What should be true when this is done?
+    validations:
+      required: true
+  - type: textarea
+    id: verification
+    attributes:
+      label: How it will be verified
