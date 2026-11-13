@@ -1,0 +1,26 @@
+[sqlfluff]
+dialect = snowflake
+# The jinja templater needs no database connection, so linting also works in CI
+# without secrets (ADR-001, D7). Revisit the dbt templater in Phase 3.
+templater = jinja
+max_line_length = 100
+
+[sqlfluff:templater:jinja]
+# Provide dbt's ref(), source(), config(), etc. as stubs.
+apply_dbt_builtins = True
+
+# CLAUDE.md: lowercase keywords and CTE-based style.
+[sqlfluff:rules:capitalisation.keywords]
+capitalisation_policy = lower
+
+[sqlfluff:rules:capitalisation.functions]
+extended_capitalisation_policy = lower
+
+[sqlfluff:rules:capitalisation.literals]
+capitalisation_policy = lower
+
+[sqlfluff:rules:capitalisation.types]
+extended_capitalisation_policy = lower
+
+[sqlfluff:rules:structure.subquery]
+forbid_subquery_in = both
