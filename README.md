@@ -2,7 +2,7 @@
 
 End-to-end BI portfolio project for StreamPulse, a fictional subscription video-on-demand (OTT) service operating in Poland, Germany, Sweden, and Norway. Synthetic data flows through Snowflake, dbt, and Airflow into Power BI and Microsoft Fabric, with CI/CD, automated tests, and guarded AI-assisted development.
 
-**Status:** Phase 0 (foundations) in progress. The phases and their Definition of Done are in [PLAN.md](PLAN.md); design decisions are in [docs/adr](docs/adr/README.md).
+**Status:** Phase 0 (foundations) complete: `main` is protected by a ruleset, and a pull request with a failing lint cannot be merged ([demo PR #8](https://github.com/sylwiab-code/streampulse-bi/pull/8)). The phases and their Definition of Done are in [PLAN.md](PLAN.md); design decisions are in [docs/adr](docs/adr/README.md).
 
 ## Local development
 
@@ -35,3 +35,15 @@ Run the tests with `uv run pytest`; the `ci-python` workflow runs them on every 
 `.claude/` holds the shared Claude Code settings and a command guard for AI-assisted work; see [docs/ai-workflow.md](docs/ai-workflow.md#guardrails).
 
 For local settings, copy `.env.example` to `.env` and fill in the DEV values. `.env` is gitignored; never put TEST or PROD credentials in it.
+
+## Contributing
+
+Every change goes through a pull request. Reviews follow [docs/standards/review-checklist.md](docs/standards/review-checklist.md).
+
+`main` is protected by the ruleset in [.github/rulesets/main.json](.github/rulesets/main.json): the `pre-commit`, `gitleaks`, `pr-title`, and `pytest` checks must pass, merges are squash-only with linear history, force pushes and deletion are blocked, and nobody can bypass the rules. The file is applied with the GitHub API:
+
+```bash
+gh api --method POST repos/sylwiab-code/streampulse-bi/rulesets --input .github/rulesets/main.json
+```
+
+To change the rules, edit the file and send it with `--method PUT` to `repos/sylwiab-code/streampulse-bi/rulesets/<id>`.
