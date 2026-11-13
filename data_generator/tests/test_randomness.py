@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 
 import numpy as np
+
 from streampulse_generator.customers import email_local_part
 from streampulse_generator.lifecycle import add_months
 from streampulse_generator.randomness import hash_uniform, stable_seed

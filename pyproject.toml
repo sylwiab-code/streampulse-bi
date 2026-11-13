@@ -41,6 +41,9 @@ select = [
     "RUF", # ruff-specific rules
 ]
 
+[tool.ruff.lint.isort]
+known-first-party = ["streampulse_generator"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests", "data_generator/tests"]
 addopts = ["-ra", "--strict-markers", "--strict-config", "--import-mode=importlib"]

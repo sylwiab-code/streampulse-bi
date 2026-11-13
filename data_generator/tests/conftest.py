@@ -7,6 +7,7 @@ from pathlib import Path
 
 import polars as pl
 import pytest
+
 from streampulse_generator.batches import apply_defects
 from streampulse_generator.config import GeneratorConfig
 from streampulse_generator.simulation import simulate

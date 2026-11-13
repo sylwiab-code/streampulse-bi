@@ -7,6 +7,7 @@ from datetime import timedelta
 import polars as pl
 import pytest
 from polars.testing import assert_frame_equal
+
 from streampulse_generator.batches import ARRIVAL, TABLES, apply_defects, write_batches
 from streampulse_generator.cli import main
 from streampulse_generator.simulation import simulate

@@ -8,6 +8,7 @@ from datetime import date, datetime, time
 import polars as pl
 import pytest
 from polars.testing import assert_frame_equal
+
 from streampulse_generator.config import GeneratorConfig
 from streampulse_generator.simulation import simulate
 
