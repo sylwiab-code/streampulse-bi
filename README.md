@@ -30,4 +30,8 @@ The `ci-lint` workflow runs the same hooks on every pull request and on `main`, 
 uv run pre-commit run gitleaks-history --hook-stage manual
 ```
 
+Run the tests with `uv run pytest`; the `ci-python` workflow runs them on every pull request and on `main`.
+
+`.claude/` holds the shared Claude Code settings and a command guard for AI-assisted work; see [docs/ai-workflow.md](docs/ai-workflow.md#guardrails).
+
 For local settings, copy `.env.example` to `.env` and fill in the DEV values. `.env` is gitignored; never put TEST or PROD credentials in it.
