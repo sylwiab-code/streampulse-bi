@@ -1,0 +1,37 @@
+[project]
+name = "streampulse-bi"
+version = "0.1.0"
+description = "End-to-end BI portfolio project for a fictional OTT subscription service"
+readme = "README.md"
+requires-python = "==3.12.*"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.7.0",
+    "pytest>=9.2.0",
+]
+
+[tool.uv]
+# The root project holds shared developer tooling only; it is not an installable package.
+package = false
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # import sorting
+    "B",   # bugbear: likely bugs
+    "UP",  # pyupgrade: modern syntax for the target version
+    "SIM", # simplifications
+    "RUF", # ruff-specific rules
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["-ra", "--strict-markers", "--strict-config"]
