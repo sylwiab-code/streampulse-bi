@@ -342,3 +342,4 @@ Each phase ends with a merged PR (or a series of PRs), updated docs, and green C
 | 006 | Safe use of AI agents |
 | 007 | Deployment strategy (fabric-cicd vs deployment pipelines) |
 | 008 | Power BI and Fabric licensing |
+| 009 | Synthetic data generator design (Phase 1; accepted) |

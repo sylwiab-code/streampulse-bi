@@ -1,0 +1,18 @@
+[project]
+name = "streampulse-generator"
+version = "0.1.0"
+description = "Synthetic data generator for the StreamPulse OTT subscription service"
+readme = "README.md"
+requires-python = "==3.12.*"
+dependencies = [
+    "faker>=40.54.0",
+    "numpy>=2.5.4",
+    "polars>=2.1.0",
+]
+
+[project.scripts]
+generate = "streampulse_generator.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.13.7,<0.14"]
+build-backend = "uv_build"
