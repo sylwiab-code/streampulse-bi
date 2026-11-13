@@ -59,7 +59,7 @@ GitHub Actions for CI/CD; Claude Code with guardrails and a custom MCP server
 |---|---|---|---|---|
 | D1 | Repository visibility | Public from day one | Private with GitHub Pro; private on GitHub Free | Rulesets, environment required reviewers (needed in Phase 7), and secret scanning push protection are free for public repositories; the full history, including red CI runs, is visible to reviewers. Nothing secret is ever committed |
 | — | Commit identity | GitHub noreply email (repository-local `user.email`) | Personal email | Keeps a personal address out of a public, permanent history |
-| — | License | No license file (all rights reserved) | MIT; Apache-2.0 | _To be confirmed by the decision-maker before merge._ |
+| — | License | No license file (all rights reserved) | MIT; Apache-2.0 | Owner preference |
 | D2 | Protection of `main` | Repository ruleset stored as JSON in `.github/rulesets/` and applied with `gh api`: PR required, 0 approvals, required status checks, no bypass, linear history, no force push | Classic branch protection set in the web UI | Reviewable as code. No bypass means the rules also apply to the repository admin. 0 approvals because a single maintainer cannot approve their own PRs |
 | D3 | Merge strategy | Squash merge only; PR title must follow Conventional Commits (checked in CI) | Rebase merge with every commit checked; merge commits | One conventional entry per PR on `main`; the individual small commits stay visible in the PR |
 | D4 | Python version | 3.12 for local, CI, and containers | 3.13; 3.14 | Broadest support across dbt, Astro Runtime, Cosmos, and the Snowflake connector. Re-checked against the Astro Runtime image in Phase 4 |
