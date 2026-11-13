@@ -4,7 +4,9 @@ version = "0.1.0"
 description = "End-to-end BI portfolio project for a fictional OTT subscription service"
 readme = "README.md"
 requires-python = "==3.12.*"
-dependencies = []
+dependencies = [
+    "streampulse-generator",
+]
 
 [dependency-groups]
 dev = [
@@ -15,6 +17,13 @@ dev = [
 [tool.uv]
 # The root project holds shared developer tooling only; it is not an installable package.
 package = false
+
+[tool.uv.workspace]
+# Each component is a package with its own dependencies; all share one lockfile (ADR-009).
+members = ["data_generator"]
+
+[tool.uv.sources]
+streampulse-generator = { workspace = true }
 
 [tool.ruff]
 target-version = "py312"
@@ -33,5 +42,5 @@ select = [
 ]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts = ["-ra", "--strict-markers", "--strict-config"]
+testpaths = ["tests", "data_generator/tests"]
+addopts = ["-ra", "--strict-markers", "--strict-config", "--import-mode=importlib"]
