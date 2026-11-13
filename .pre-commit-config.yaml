@@ -37,3 +37,15 @@ repos:
     rev: 2ca41cc1372d1e939a6a879f18cdc19fc1cac1ce  # frozen: v8.30.0
     hooks:
       - id: gitleaks
+      # Same pinned gitleaks, scanning the whole git history. Runs in CI, or locally with
+      # `uv run pre-commit run gitleaks-history --hook-stage manual`.
+      - id: gitleaks
+        alias: gitleaks-history
+        name: Detect hardcoded secrets (full git history)
+        entry: gitleaks git --redact --verbose
+        stages: [manual]
+
+  - repo: https://github.com/rhysd/actionlint
+    rev: 914e7df21a07ef503a81201c76d2b11c789d3fca  # frozen: v1.7.12
+    hooks:
+      - id: actionlint
