@@ -12,6 +12,16 @@ Prerequisites: Git and [uv](https://docs.astral.sh/uv/). uv installs Python 3.12
 uv sync
 ```
 
-This creates `.venv` with the developer tools (pre-commit, pytest).
+This creates `.venv` with the developer tools (pre-commit, pytest). Then install the git hook once per clone:
+
+```bash
+uv run pre-commit install
+```
+
+Every commit now runs ruff, yamllint, sqlfluff (Snowflake dialect), gitleaks, and basic file checks, and commits to `main` are refused. To check the whole repository at any time:
+
+```bash
+uv run pre-commit run --all-files
+```
 
 For local settings, copy `.env.example` to `.env` and fill in the DEV values. `.env` is gitignored; never put TEST or PROD credentials in it.

@@ -1,0 +1,11 @@
+extends: default
+
+rules:
+  # GitHub Actions and pre-commit files conventionally omit the "---" marker.
+  document-start: disable
+  line-length:
+    max: 120
+  # Allow the GitHub Actions "on:" key; values must still be true/false.
+  truthy:
+    allowed-values: ["true", "false"]
+    check-keys: false
