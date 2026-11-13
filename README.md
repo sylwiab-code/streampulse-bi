@@ -2,7 +2,7 @@
 
 End-to-end BI portfolio project for StreamPulse, a fictional subscription video-on-demand (OTT) service operating in Poland, Germany, Sweden, and Norway. Synthetic data flows through Snowflake, dbt, and Airflow into Power BI and Microsoft Fabric, with CI/CD, automated tests, and guarded AI-assisted development.
 
-**Status:** Phase 0 (foundations) complete: `main` is protected by a ruleset, and a pull request with a failing lint cannot be merged ([demo PR #8](https://github.com/sylwiab-code/streampulse-bi/pull/8)). The phases and their Definition of Done are in [PLAN.md](PLAN.md); design decisions are in [docs/adr](docs/adr/README.md).
+**Status:** Phase 1 (synthetic data generator) complete: `uv run generate backfill` and `uv run generate daily --days 1` write deterministic Parquet batches; see [data_generator/README.md](data_generator/README.md). Phase 0 (foundations) is complete: `main` is protected by a ruleset, and a pull request with a failing lint cannot be merged ([demo PR #8](https://github.com/sylwiab-code/streampulse-bi/pull/8)). The phases and their Definition of Done are in [PLAN.md](PLAN.md); design decisions are in [docs/adr](docs/adr/README.md).
 
 ## Local development
 
@@ -12,7 +12,7 @@ Prerequisites: Git and [uv](https://docs.astral.sh/uv/). uv installs Python 3.12
 uv sync
 ```
 
-This creates `.venv` with the developer tools (pre-commit, pytest). Then install the git hook once per clone:
+This creates `.venv` with the developer tools (pre-commit, pytest) and the project's Python packages, which form a uv workspace with one lockfile ([ADR-009](docs/adr/009-synthetic-data-generator-design.md)). Then install the git hook once per clone:
 
 ```bash
 uv run pre-commit install

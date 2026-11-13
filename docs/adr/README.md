@@ -17,5 +17,6 @@ The format is based on [MADR](https://adr.github.io/madr/).
 | ADR | Title | Status | Date |
 |---|---|---|---|
 | [001](001-overall-architecture-and-tool-choices.md) | Overall architecture and tool choices | Accepted | 2026-11-12 |
+| [009](009-synthetic-data-generator-design.md) | Synthetic data generator design | Accepted | 2026-11-13 |
 
 Planned ADRs and the phases that produce them are listed in [`PLAN.md`](../../PLAN.md), section 10.
