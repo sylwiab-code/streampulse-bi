@@ -60,7 +60,8 @@ jobs:
           path: ~/.cache/pre-commit
           key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
       - name: Scan the full git history for secrets
-        run: uv run pre-commit run gitleaks-history --hook-stage manual --color always
+        # --verbose shows the gitleaks summary ("N commits scanned") in the log as evidence.
+        run: uv run pre-commit run gitleaks-history --hook-stage manual --verbose --color always
 
   pr-title:
     name: pr-title
