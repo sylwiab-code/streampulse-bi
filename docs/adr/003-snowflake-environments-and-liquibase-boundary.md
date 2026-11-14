@@ -40,6 +40,10 @@ All options marked "Chosen" above, decided together on 2026-11-14.
 
 **Authentication.** Service users have `TYPE = SERVICE` (no password) and key-pair authentication. The private key stays on the developer machine outside the repository; tools receive only its path. On developer machines the DEV deployer user also runs the loader and the integration tests, switching to each functional role, so one key pair is enough locally. Service users have no default secondary roles, and connections run `USE SECONDARY ROLES NONE`, because masking checks the roles in the session.
 
+**Managed access.** The `RAW` schema is created `WITH MANAGED ACCESS`, so its owner (the deployer) can define future grants. A regular schema would need the account-wide `MANAGE GRANTS` privilege, which would let the DEV deployer change grants in TEST and PROD. Managed access must be set at creation: enabling it later also needs `MANAGE GRANTS`. dbt schemas follow the same rule in Phase 3.
+
+**Parquet types.** The file format sets `USE_LOGICAL_TYPE = TRUE`; without it, Parquet timestamps (INT64 microseconds) load as far-future dates. An integration test checks the loaded date ranges.
+
 **Guardrails.** `database/liquibase/run.py` and the loader refuse TEST and PROD outside GitHub Actions.
 
 **Linting.** ADR-001 (D7) planned the jinja templater for `database/`. Liquibase parameters (`${env}`) are not jinja, so `database/` is linted with the placeholder templater through its own config file; `transform/` keeps jinja.
