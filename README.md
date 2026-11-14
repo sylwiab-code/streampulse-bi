@@ -2,7 +2,7 @@
 
 End-to-end BI portfolio project for StreamPulse, a fictional subscription video-on-demand (OTT) service operating in Poland, Germany, Sweden, and Norway. Synthetic data flows through Snowflake, dbt, and Airflow into Power BI and Microsoft Fabric, with CI/CD, automated tests, and guarded AI-assisted development.
 
-**Status:** Phase 1 (synthetic data generator) complete: `uv run generate backfill` and `uv run generate daily --days 1` write deterministic Parquet batches; see [data_generator/README.md](data_generator/README.md). Phase 0 (foundations) is complete: `main` is protected by a ruleset, and a pull request with a failing lint cannot be merged ([demo PR #8](https://github.com/sylwiab-code/streampulse-bi/pull/8)). The phases and their Definition of Done are in [PLAN.md](PLAN.md); design decisions are in [docs/adr](docs/adr/README.md).
+**Status:** Phase 2 (Snowflake platform with Liquibase) in progress: changelogs, the loader, and masking tests are ready; setup in [docs/guides/snowflake-setup.md](docs/guides/snowflake-setup.md). Phase 1 (synthetic data generator) is complete: `uv run generate backfill` and `uv run generate daily --days 1` write deterministic Parquet batches; see [data_generator/README.md](data_generator/README.md). Phase 0 (foundations) is complete: `main` is protected by a ruleset, and a pull request with a failing lint cannot be merged ([demo PR #8](https://github.com/sylwiab-code/streampulse-bi/pull/8)). The phases and their Definition of Done are in [PLAN.md](PLAN.md); design decisions are in [docs/adr](docs/adr/README.md).
 
 ## Local development
 
@@ -47,3 +47,7 @@ gh api --method POST repos/sylwiab-code/streampulse-bi/rulesets --input .github/
 ```
 
 To change the rules, edit the file and send it with `--method PUT` to `repos/sylwiab-code/streampulse-bi/rulesets/<id>`.
+
+## Snowflake
+
+The platform is defined in [database/](database/) and applied with Liquibase in Docker; the loader in [loader/](loader/) puts generated batches into the raw layer. One-time setup and the commands to build DEV, load data, and verify masking: [docs/guides/snowflake-setup.md](docs/guides/snowflake-setup.md).

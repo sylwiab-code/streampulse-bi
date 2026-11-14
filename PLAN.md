@@ -336,7 +336,7 @@ Each phase ends with a merged PR (or a series of PRs), updated docs, and green C
 |---|---|
 | 001 | Overall architecture and tool choices |
 | 002 | Logic split between dbt and Power BI |
-| 003 | Liquibase vs dbt boundary; Snowflake environment layout |
+| 003 | Liquibase vs dbt boundary; Snowflake environment layout (Phase 2; accepted) |
 | 004 | Import on Snowflake vs Direct Lake on OneLake |
 | 005 | Snowflake to Fabric integration (mirroring vs Iceberg) |
 | 006 | Safe use of AI agents |
