@@ -31,7 +31,13 @@ repos:
     rev: 0a7c698408dc56e5efcbe37edc1ec23c782c003b  # frozen: 4.5.0
     hooks:
       - id: sqlfluff-lint
-        files: ^(transform|database)/.*\.sql$
+        files: ^transform/.*\.sql$
+      # Liquibase changelogs use ${name} parameters, linted with the placeholder templater.
+      - id: sqlfluff-lint
+        alias: sqlfluff-lint-liquibase
+        name: sqlfluff-lint (Liquibase)
+        args: [--config, database/sqlfluff-liquibase.cfg]
+        files: ^database/.*\.sql$
 
   - repo: https://github.com/gitleaks/gitleaks
     rev: 2ca41cc1372d1e939a6a879f18cdc19fc1cac1ce  # frozen: v8.30.0
