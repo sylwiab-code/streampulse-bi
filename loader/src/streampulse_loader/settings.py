@@ -89,6 +89,8 @@ def connect(settings: Settings, role: str, warehouse: str) -> Any:
         database=settings.database,
         schema="RAW",
         session_parameters={"QUERY_TAG": "streampulse"},
+        # No async queries: always log out on close (and silence the connector's warning).
+        enable_server_session_keep_alive_auto_detection=False,
     )
     # Masking depends on the roles in the session; secondary roles would widen them.
     connection.cursor().execute("use secondary roles none")
