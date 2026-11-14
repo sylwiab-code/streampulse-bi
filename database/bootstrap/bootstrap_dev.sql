@@ -42,6 +42,7 @@ create user if not exists svc_deployer_dev
     type = service
     default_role = deployer_dev
     default_warehouse = wh_deploy
+    default_secondary_roles = ()
     rsa_public_key = '<DEPLOYER_DEV_PUBLIC_KEY>'
     comment = 'Liquibase, loader, and tests for DEV (key-pair authentication)';
 

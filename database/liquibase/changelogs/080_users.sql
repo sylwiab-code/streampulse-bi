@@ -9,6 +9,7 @@ create user if not exists svc_loader_${env}
     type = service
     default_role = loader_${env}
     default_warehouse = wh_load_${env}
+    default_secondary_roles = ()
     comment = 'Raw file loader (${env})';
 grant role loader_${env} to user svc_loader_${env};
 -- rollback drop user if exists svc_loader_${env};
@@ -18,6 +19,7 @@ create user if not exists svc_transformer_${env}
     type = service
     default_role = transformer_${env}
     default_warehouse = wh_transform_${env}
+    default_secondary_roles = ()
     comment = 'dbt (${env})';
 grant role transformer_${env} to user svc_transformer_${env};
 -- rollback drop user if exists svc_transformer_${env};
