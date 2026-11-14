@@ -1,0 +1,27 @@
+# Root changelog for one StreamPulse environment (ADR-003). Parameters and contexts come
+# from env/<environment>.properties; run it with database/liquibase/run.py.
+databaseChangeLog:
+  - include:
+      file: changelogs/010_warehouses.sql
+      relativeToChangelogFile: true
+  - include:
+      file: changelogs/020_databases.sql
+      relativeToChangelogFile: true
+  - include:
+      file: changelogs/030_roles.sql
+      relativeToChangelogFile: true
+  - include:
+      file: changelogs/040_stages.sql
+      relativeToChangelogFile: true
+  - include:
+      file: changelogs/050_raw_tables.sql
+      relativeToChangelogFile: true
+  - include:
+      file: changelogs/060_masking_policies.sql
+      relativeToChangelogFile: true
+  - include:
+      file: changelogs/070_grants.sql
+      relativeToChangelogFile: true
+  - include:
+      file: changelogs/080_users.sql
+      relativeToChangelogFile: true

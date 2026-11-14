@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = "==3.12.*"
 dependencies = [
     "streampulse-generator",
+    "streampulse-loader",
 ]
 
 [dependency-groups]
@@ -20,10 +21,11 @@ package = false
 
 [tool.uv.workspace]
 # Each component is a package with its own dependencies; all share one lockfile (ADR-009).
-members = ["data_generator"]
+members = ["data_generator", "loader"]
 
 [tool.uv.sources]
 streampulse-generator = { workspace = true }
+streampulse-loader = { workspace = true }
 
 [tool.ruff]
 target-version = "py312"
@@ -42,8 +44,8 @@ select = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["streampulse_generator"]
+known-first-party = ["streampulse_generator", "streampulse_loader"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests", "data_generator/tests"]
+testpaths = ["tests", "data_generator/tests", "loader/tests"]
 addopts = ["-ra", "--strict-markers", "--strict-config", "--import-mode=importlib"]
