@@ -7,6 +7,7 @@ loaded data. Queries return counts only, never PII values (CLAUDE.md).
 from __future__ import annotations
 
 import os
+from datetime import date
 from pathlib import Path
 
 import pytest
@@ -68,6 +69,32 @@ def test_roles_without_read_access_cannot_query_raw(settings, function, warehous
 
     with pytest.raises(ProgrammingError):
         query(settings, function, warehouse, "select count(*) from raw.customers")
+
+
+def test_timestamps_and_dates_load_correctly(settings):
+    """Parquet logical types must be honored; otherwise timestamps land in the far future."""
+    since, until = date(2024, 11, 1), date.today()
+    created_from, created_to, rate_from, rate_to = query(
+        settings,
+        "ai_readonly",
+        "report",
+        "select min(created_at)::date, max(created_at)::date, min(rate_date), max(rate_date) "
+        "from raw.customers, raw.fx_rates",
+    )
+    assert since <= created_from <= created_to <= until
+    assert since <= rate_from <= rate_to <= until
+
+
+def test_viewing_sessions_schema_versions_split_on_the_change_date(settings):
+    old_after_change, new_before_change = query(
+        settings,
+        "ai_readonly",
+        "report",
+        "select count_if(device is not null and started_at >= '2026-01-01'), "
+        "count_if(device_type is not null and started_at < '2026-01-01') "
+        "from raw.viewing_sessions",
+    )
+    assert (old_after_change, new_before_change) == (0, 0)
 
 
 def test_every_local_file_was_loaded(settings):
