@@ -12,6 +12,14 @@ updates:
       python:
         patterns: ["*"]
 
+  - package-ecosystem: docker
+    directory: /database/liquibase
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: build
+      include: scope
+
   - package-ecosystem: github-actions
     directory: /
     schedule:
