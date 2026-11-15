@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import dataclasses
+import json
 import time
 from collections.abc import Sequence
 from datetime import date, timedelta
@@ -12,6 +13,16 @@ from pathlib import Path
 from .batches import apply_defects, write_batches
 from .config import GeneratorConfig
 from .simulation import simulate
+
+# Written by a backfill; a daily batch for a date it covers would overwrite the backfill files.
+BACKFILL_MARKER = "_backfill.json"
+
+
+def backfill_end_date(output: Path) -> date | None:
+    marker = output / BACKFILL_MARKER
+    if not marker.is_file():
+        return None
+    return date.fromisoformat(json.loads(marker.read_text(encoding="utf-8"))["end_date"])
 
 
 def _parse_date(text: str) -> date:
@@ -62,12 +73,21 @@ def main(argv: Sequence[str] | None = None) -> int:
         load_dates = [args.end_date]
     if load_dates[0] < cfg.start_date:
         raise SystemExit(f"the first load date must not be before {cfg.start_date}")
+    covered = backfill_end_date(args.output)
+    if args.command == "daily" and covered is not None and load_dates[0] <= covered:
+        raise SystemExit(
+            f"The backfill in {args.output} already covers {covered}; daily batches must start "
+            f"after it (use --end-date {covered + timedelta(days=args.days)} or later)."
+        )
 
     started = time.perf_counter()
     prepared = apply_defects(cfg, simulate(cfg, args.end_date))
     written = write_batches(
         cfg, prepared, args.output, load_dates, backfill=args.command == "backfill"
     )
+    if args.command == "backfill":
+        marker = {"end_date": args.end_date.isoformat()}
+        (args.output / BACKFILL_MARKER).write_text(json.dumps(marker) + "\n", encoding="utf-8")
     for load_date, counts in written.items():
         print(f"{args.command} batch load_date={load_date} -> {args.output}")
         for table, rows in counts.items():
