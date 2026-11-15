@@ -1,0 +1,47 @@
+version: 2
+
+sources:
+  - name: streampulse_raw
+    description: >
+      Raw generator batches loaded by the loader (loader/README.md). Rows arrive as delivered,
+      including deliberate duplicates, late rows, and missing keys (data_generator/README.md).
+    database: "{{ target.database }}"
+    schema: raw
+    config:
+      loaded_at_field: _loaded_at
+      freshness:
+        warn_after: {count: 26, period: hour}
+        error_after: {count: 50, period: hour}
+    tables:
+      - name: markets
+        description: Market snapshot, one copy per batch.
+      - name: currencies
+        description: Currency snapshot, one copy per batch.
+      - name: plans
+        description: Plan snapshot, one copy per batch.
+      - name: plan_prices
+        description: Price history snapshot per market and plan, one copy per batch.
+      - name: content_catalog
+        description: Titles available on the load date, one copy per batch.
+      - name: campaigns
+        description: Campaigns started by the load date, one copy per batch.
+      - name: fx_rates
+        description: Daily units of currency per EUR.
+      - name: campaign_spend
+        description: Daily spend per campaign in local currency.
+      - name: customers
+        description: >
+          Customers with masked PII. TRANSFORMER sees SHA-256 hashes (email normalized:
+          lowercase, +tag removed); other roles see a fixed mask (ADR-003).
+      - name: acquisition_attribution
+        description: Acquisition channel and campaign per customer.
+      - name: subscriptions
+        description: One row per subscription; a reactivation starts a new subscription.
+      - name: subscription_events
+        description: Lifecycle events; 1% arrive 1-5 days late, 0.5% are duplicated.
+      - name: payments
+        description: Payment attempts with retries; 0.1% miss customer_id.
+      - name: viewing_sessions
+        description: >
+          Viewing sessions. From 2026-01-01 the source sends device_type and app_version
+          instead of device (schema change).

@@ -1,0 +1,322 @@
+version: 2
+
+models:
+  - name: stg_streampulse__markets
+    description: "Markets. Latest snapshot version per key."
+    columns:
+      - name: market_code
+        description: "Market code."
+        data_tests:
+          - unique
+          - not_null
+      - name: market_name
+        description: "Name."
+      - name: currency_code
+        description: "Local currency."
+      - name: load_date
+        description: "Load date of the snapshot used."
+
+  - name: stg_streampulse__currencies
+    description: "Currencies. Latest snapshot version per key."
+    columns:
+      - name: currency_code
+        description: "Currency code."
+        data_tests:
+          - unique
+          - not_null
+      - name: currency_name
+        description: "Name."
+      - name: load_date
+        description: "Load date of the snapshot used."
+
+  - name: stg_streampulse__plans
+    description: "Plans. Latest snapshot version per key."
+    columns:
+      - name: plan_id
+        description: "Plan."
+        data_tests:
+          - unique
+          - not_null
+      - name: plan_name
+        description: "Name."
+      - name: tier_name
+        description: "Tier."
+      - name: tier_rank
+        description: "Tier rank."
+      - name: billing_period
+        description: "monthly or annual."
+      - name: billing_months
+        description: "Months per payment."
+      - name: load_date
+        description: "Load date of the snapshot used."
+
+  - name: stg_streampulse__plan_prices
+    description: "Price history per market and plan. Latest snapshot version per key."
+    columns:
+      - name: price_id
+        description: "Price row."
+        data_tests:
+          - unique
+          - not_null
+      - name: market_code
+        description: "Market."
+      - name: plan_id
+        description: "Plan."
+      - name: currency_code
+        description: "Currency."
+      - name: price_local
+        description: "List price in local currency."
+      - name: valid_from
+        description: "First valid day."
+      - name: valid_to
+        description: "Last valid day; null while current."
+      - name: load_date
+        description: "Load date of the snapshot used."
+
+  - name: stg_streampulse__content_catalog
+    description: "Titles. Latest snapshot version per key."
+    columns:
+      - name: title_id
+        description: "Title."
+        data_tests:
+          - unique
+          - not_null
+      - name: title_name
+        description: "Name."
+      - name: genre_name
+        description: "Genre."
+      - name: content_type
+        description: "movie or series."
+      - name: runtime_minutes
+        description: "Runtime."
+      - name: release_year
+        description: "Release year."
+      - name: added_date
+        description: "Day added."
+      - name: load_date
+        description: "Load date of the snapshot used."
+
+  - name: stg_streampulse__campaigns
+    description: "Campaigns. Latest snapshot version per key."
+    columns:
+      - name: campaign_id
+        description: "Campaign."
+        data_tests:
+          - unique
+          - not_null
+      - name: campaign_name
+        description: "Name."
+      - name: market_code
+        description: "Market."
+      - name: acquisition_channel
+        description: "Paid channel."
+      - name: start_date
+        description: "First day."
+      - name: end_date
+        description: "Last day."
+      - name: load_date
+        description: "Load date of the snapshot used."
+
+  - name: stg_streampulse__fx_rates
+    description: "Daily exchange rates, deduplicated."
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [rate_date, currency_code]
+    columns:
+      - name: rate_date
+        description: "Day."
+        data_tests:
+          - not_null
+      - name: currency_code
+        description: "Currency."
+        data_tests:
+          - not_null
+      - name: units_per_eur
+        description: "Units of currency per EUR."
+        data_tests:
+          - not_null
+
+  - name: stg_streampulse__campaign_spend
+    description: "Daily campaign spend, deduplicated."
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [spend_date, campaign_id]
+    columns:
+      - name: spend_date
+        description: "Day."
+      - name: campaign_id
+        description: "Campaign."
+      - name: currency_code
+        description: "Currency."
+      - name: spend_local
+        description: "Spend in local currency."
+
+  - name: stg_streampulse__customers
+    description: >
+      Customers, deduplicated; names dropped, email as the normalized hash dbt sees through
+      masking.
+    columns:
+      - name: customer_id
+        description: "Customer."
+        data_tests:
+          - unique
+          - not_null
+      - name: email_hash
+        description: "SHA-256 of the normalized email (masking policy for TRANSFORMER)."
+        data_tests:
+          - not_null
+      - name: market_code
+        description: "Market."
+      - name: created_at
+        description: "Sign-up time."
+      - name: signup_date
+        description: "Sign-up day."
+
+  - name: stg_streampulse__acquisition_attribution
+    description: "Acquisition channel and campaign per customer, deduplicated."
+    columns:
+      - name: customer_id
+        description: "Customer."
+        data_tests:
+          - unique
+          - not_null
+      - name: acquisition_channel
+        description: "Channel."
+      - name: campaign_id
+        description: "Campaign for paid channels."
+      - name: attributed_at
+        description: "Attribution time."
+
+  - name: stg_streampulse__subscriptions
+    description: "Subscriptions, deduplicated."
+    columns:
+      - name: subscription_id
+        description: "Subscription."
+        data_tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: "Customer."
+        data_tests:
+          - not_null
+      - name: market_code
+        description: "Market."
+      - name: initial_plan_id
+        description: "Plan at start."
+      - name: created_at
+        description: "Start time."
+      - name: is_trial
+        description: "Started with a trial."
+      - name: is_reactivation
+        description: "Returning customer."
+
+  - name: stg_streampulse__subscription_events
+    description: >
+      Lifecycle events (incremental merge on event_id: removes duplicates, adds late rows).
+    columns:
+      - name: event_id
+        description: "Event."
+        data_tests:
+          - unique
+          - not_null
+      - name: subscription_id
+        description: "Subscription."
+        data_tests:
+          - not_null
+      - name: customer_id
+        description: "Customer."
+      - name: event_type
+        description: "Event type."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values:
+                  - 'trial_started'
+                  - 'trial_converted'
+                  - 'trial_expired'
+                  - 'subscription_started'
+                  - 'plan_upgraded'
+                  - 'plan_downgraded'
+                  - 'price_increased'
+                  - 'cancelled'
+                  - 'reactivated'
+      - name: event_at
+        description: "Event time."
+      - name: plan_id
+        description: "Plan after the event."
+      - name: previous_plan_id
+        description: "Plan before a plan change."
+      - name: cancellation_type
+        description: "voluntary or involuntary."
+      - name: effective_date
+        description: "Day a cancellation takes effect."
+      - name: loaded_at
+        description: "Load time of the latest version of the row."
+
+  - name: stg_streampulse__payments
+    description: "Payment attempts (incremental merge on payment_id)."
+    columns:
+      - name: payment_id
+        description: "Payment attempt."
+        data_tests:
+          - unique
+          - not_null
+      - name: subscription_id
+        description: "Subscription."
+        data_tests:
+          - not_null
+      - name: customer_id
+        description: "Customer; 0.1% missing in the source."
+      - name: plan_id
+        description: "Plan billed."
+      - name: billing_period_start
+        description: "Billed period start."
+      - name: attempt_number
+        description: "Attempt number."
+      - name: attempted_at
+        description: "Attempt time."
+      - name: amount_local
+        description: "Amount in local currency."
+      - name: currency_code
+        description: "Currency."
+      - name: payment_status
+        description: "succeeded or failed."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['succeeded', 'failed']
+      - name: failure_reason
+        description: "Failure reason."
+      - name: loaded_at
+        description: "Load time of the latest version of the row."
+
+  - name: stg_streampulse__viewing_sessions
+    description: >
+      Viewing sessions (incremental merge on session_id); device and device_type unified
+      across the 2026-01-01 schema change.
+    columns:
+      - name: session_id
+        description: "Session."
+        data_tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: "Customer; 0.1% missing in the source."
+      - name: title_id
+        description: "Title."
+        data_tests:
+          - not_null
+      - name: started_at
+        description: "Start time."
+      - name: watch_minutes
+        description: "Minutes watched."
+      - name: device_type
+        description: "Device (device before the schema change)."
+        data_tests:
+          - not_null
+      - name: app_version
+        description: "App version; null before the schema change."
+      - name: loaded_at
+        description: "Load time of the latest version of the row."
