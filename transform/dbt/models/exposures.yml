@@ -1,0 +1,51 @@
+version: 2
+
+# Power BI reports (built in Phase 6) and the KPI models they read; URLs follow in Phase 7.
+exposures:
+  - name: executive_report
+    label: Executive overview
+    type: dashboard
+    maturity: low
+    description: Subscribers, MRR and ARR, the MRR bridge, churn, and ARPU.
+    owner:
+      name: Global BI
+    depends_on:
+      - ref('kpi_subscribers_daily')
+      - ref('kpi_mrr_movements_monthly')
+      - ref('kpi_churn_monthly')
+      - ref('kpi_arpu_monthly')
+
+  - name: churn_report
+    label: Churn and retention
+    type: dashboard
+    maturity: low
+    description: Voluntary and involuntary churn, cohort retention, and trial conversion.
+    owner:
+      name: Global BI
+    depends_on:
+      - ref('kpi_churn_monthly')
+      - ref('kpi_cohort_retention')
+      - ref('kpi_trial_conversion_monthly')
+
+  - name: content_report
+    label: Content and engagement
+    type: dashboard
+    maturity: low
+    description: Watch hours by genre and content performance per title.
+    owner:
+      name: Global BI
+    depends_on:
+      - ref('kpi_engagement_monthly')
+      - ref('kpi_content_performance_monthly')
+      - ref('dim_content')
+
+  - name: market_report
+    label: Market performance
+    type: dashboard
+    maturity: low
+    description: Acquisition cost and lifetime value per market and channel, plus local views.
+    owner:
+      name: Global BI
+    depends_on:
+      - ref('kpi_cac_ltv_monthly')
+      - ref('kpi_de_mrr_net_of_vat')

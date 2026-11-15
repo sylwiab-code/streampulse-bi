@@ -1,0 +1,384 @@
+version: 2
+
+# KPI layer: the source of the KPI catalog (PLAN.md Phase 3). Each model carries the KPI
+# definition in meta. Models expose numerators and denominators next to ratios, so Power BI
+# can recompute ratios at any grain (ADR-002).
+
+models:
+  - name: kpi_subscribers_daily
+    description: Active subscribers, trialists, MRR, and ARR per day, market, and plan.
+    config:
+      meta:
+        owner: Global BI
+        scope: global
+        grain: day x market x plan
+        definition: >
+          Active subscribers have a paid subscription that has not ended on the day, including
+          days in the payment-retry window; trials are counted separately as trialists. MRR is
+          the plan price paid, normalized to a month (annual plans / 12), in local currency and
+          in EUR at the day's exchange rate.
+        formula: >
+          active_subscribers = count(paid subscription-days); trialists = count(trial
+          subscription-days); mrr = sum(mrr); arr_eur = mrr_eur * 12
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [date_day, market_code, plan_id]
+    columns:
+      - name: date_day
+        description: Day.
+        data_tests: [not_null]
+      - name: market_code
+        description: Market.
+      - name: plan_id
+        description: Plan.
+      - name: currency_code
+        description: Local currency of the market.
+      - name: active_subscribers
+        description: Paid subscriptions active on the day.
+      - name: trialists
+        description: Subscriptions in a free trial on the day.
+      - name: mrr_local
+        description: MRR in local currency.
+      - name: mrr_eur
+        description: MRR in EUR.
+      - name: arr_eur
+        description: ARR in EUR (MRR x 12).
+
+  - name: kpi_mrr_movements_monthly
+    description: MRR bridge per month and market by movement type.
+    config:
+      meta:
+        owner: Global BI
+        scope: global
+        grain: month x market x movement type
+        definition: >
+          Month-end MRR per customer compared with the previous month end. new = first paid
+          month end; reactivation = paid again after zero; expansion = higher MRR (upgrade or
+          price increase); contraction = lower MRR (downgrade); churn = to zero. In EUR,
+          fx_effect revalues the opening MRR at the current month's rate so that opening MRR +
+          movements = closing MRR.
+        formula: >
+          closing_mrr = opening_mrr + sum(mrr_change) over all movement types (in EUR including
+          fx_effect)
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [calendar_month, market_code, movement_type]
+    columns:
+      - name: calendar_month
+        description: Month.
+        data_tests: [not_null]
+      - name: market_code
+        description: Market.
+      - name: movement_type
+        description: new, reactivation, expansion, contraction, churn, or fx_effect.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['new', 'reactivation', 'expansion', 'contraction', 'churn', 'fx_effect']
+      - name: currency_code
+        description: Local currency.
+      - name: customers
+        description: Customers with this movement in the month.
+      - name: mrr_change_local
+        description: MRR change in local currency.
+      - name: mrr_change_eur
+        description: MRR change in EUR.
+
+  - name: kpi_churn_monthly
+    description: Monthly subscriber churn, voluntary and involuntary.
+    config:
+      meta:
+        owner: Global BI
+        scope: global
+        grain: month x market
+        definition: >
+          Subscriptions that churned in the month divided by paid subscriptions active on the
+          first day of the month. Churn date = end of the paid period (voluntary) or the last
+          failed payment retry (involuntary). Expired trials are not churn. In the launch
+          month (November 2024) the starting base is tiny, so the rate is not meaningful.
+        formula: churn_rate = (churned_voluntary + churned_involuntary) / active_at_month_start
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [calendar_month, market_code]
+    columns:
+      - name: calendar_month
+        description: Month.
+        data_tests: [not_null]
+      - name: market_code
+        description: Market.
+      - name: active_at_month_start
+        description: Paid subscriptions active on the first day of the month.
+      - name: churned_voluntary
+        description: Voluntary churn in the month.
+      - name: churned_involuntary
+        description: Involuntary churn (failed payments) in the month.
+      - name: churned_subscribers
+        description: All churn in the month.
+      - name: churn_rate
+        description: Churned subscribers / active at month start; null without a starting base.
+        data_tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                max_value: 1
+                row_condition: active_at_month_start >= 100
+
+  - name: kpi_arpu_monthly
+    description: ARPU at month end per market and plan.
+    config:
+      meta:
+        owner: Global BI
+        scope: global
+        grain: month x market x plan
+        definition: >
+          MRR divided by active subscribers at the month end (the last loaded day for the
+          current month).
+        formula: arpu = mrr / active_subscribers (month end)
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [calendar_month, market_code, plan_id]
+    columns:
+      - name: calendar_month
+        description: Month.
+        data_tests: [not_null]
+      - name: market_code
+        description: Market.
+      - name: plan_id
+        description: Plan.
+      - name: currency_code
+        description: Local currency.
+      - name: active_subscribers
+        description: Active paid subscriptions at month end.
+      - name: mrr_local
+        description: MRR in local currency at month end.
+      - name: mrr_eur
+        description: MRR in EUR at month end.
+      - name: arpu_local
+        description: ARPU in local currency.
+      - name: arpu_eur
+        description: ARPU in EUR.
+
+  - name: kpi_trial_conversion_monthly
+    description: Trial-to-paid conversion by trial start month, market, channel, and campaign.
+    config:
+      meta:
+        owner: Global BI
+        scope: global
+        grain: trial start month x market x channel x campaign
+        definition: >
+          Trials that converted to paid divided by trials started, by the month the trial
+          started. Trials still open lower the rate of the latest month until they end.
+        formula: conversion_rate = trials_converted / trials_started
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [trial_start_month, market_code, acquisition_channel, campaign_id]
+    columns:
+      - name: trial_start_month
+        description: Month the trial started.
+        data_tests: [not_null]
+      - name: market_code
+        description: Market.
+      - name: acquisition_channel
+        description: Customer's acquisition channel.
+      - name: campaign_id
+        description: Customer's acquisition campaign (paid channels).
+      - name: trials_started
+        description: Trials started.
+      - name: trials_converted
+        description: Trials converted to paid.
+      - name: trials_expired
+        description: Trials that expired without conversion.
+      - name: trials_open
+        description: Trials still running.
+      - name: conversion_rate
+        description: Converted / started.
+        data_tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                max_value: 1
+
+  - name: kpi_cohort_retention
+    description: Logo retention by first-payment cohort for months 0-24.
+    config:
+      meta:
+        owner: Global BI
+        scope: global
+        grain: cohort month x market x months since first payment
+        definition: >
+          Cohort = month of the first successful payment. A customer is retained in month k if
+          active (MRR > 0) at the end of month k after the cohort month; customers who come
+          back count as retained once active again.
+        formula: retention_rate = retained_customers / cohort_customers
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [cohort_month, market_code, months_since_first_payment]
+    columns:
+      - name: cohort_month
+        description: First payment month.
+      - name: market_code
+        description: Market.
+      - name: months_since_first_payment
+        description: k (0-24).
+      - name: calendar_month
+        description: Month in which retention is measured.
+      - name: cohort_customers
+        description: Customers in the cohort.
+      - name: retained_customers
+        description: Retained customers in month k.
+      - name: retention_rate
+        description: Retained / cohort customers.
+        data_tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                max_value: 1
+
+  - name: kpi_cac_ltv_monthly
+    description: CAC per paid channel with the market's LTV and LTV/CAC.
+    config:
+      meta:
+        owner: Global BI
+        scope: global
+        grain: month x market x acquisition channel
+        definition: >
+          CAC = paid-channel spend divided by new paying customers acquired through that channel
+          (by month of first payment); organic and referral are excluded. LTV = market ARPU
+          divided by the market's monthly churn rate (revenue-based; no margin data).
+        formula: >
+          cac_eur = spend_eur / new_paying_customers; ltv_eur = arpu_eur / churn_rate;
+          ltv_to_cac = ltv_eur / cac_eur
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [calendar_month, market_code, acquisition_channel]
+    columns:
+      - name: calendar_month
+        description: Month.
+        data_tests: [not_null]
+      - name: market_code
+        description: Market.
+      - name: acquisition_channel
+        description: Paid acquisition channel.
+      - name: spend_eur
+        description: Spend in EUR.
+      - name: new_paying_customers
+        description: Customers from this channel with their first payment in the month.
+      - name: cac_eur
+        description: Customer acquisition cost in EUR.
+      - name: arpu_eur
+        description: Market ARPU in EUR at month end.
+      - name: churn_rate
+        description: Market monthly churn rate.
+      - name: ltv_eur
+        description: Customer lifetime value in EUR.
+      - name: ltv_to_cac
+        description: LTV / CAC.
+
+  - name: kpi_engagement_monthly
+    description: Watch hours, sessions, and viewers per month, market, and genre.
+    config:
+      meta:
+        owner: Global BI
+        scope: global
+        grain: month x market x genre
+        definition: >
+          Watch hours = watch minutes / 60 from viewing sessions; viewers = distinct customers
+          with a session. Per-subscriber engagement divides by active subscribers
+          (kpi_subscribers_daily) in Power BI.
+        formula: watch_hours = sum(watch_minutes) / 60; viewers = count(distinct customer_id)
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [calendar_month, market_code, genre_name]
+    columns:
+      - name: calendar_month
+        description: Month.
+        data_tests: [not_null]
+      - name: market_code
+        description: Market.
+      - name: genre_name
+        description: Genre.
+      - name: sessions
+        description: Viewing sessions.
+      - name: viewers
+        description: Distinct customers with a session.
+      - name: watch_hours
+        description: Hours watched.
+
+  - name: kpi_content_performance_monthly
+    description: Content performance per title and month.
+    config:
+      meta:
+        owner: Global BI
+        scope: global
+        grain: month x title
+        definition: >
+          Completion rate = minutes watched / runtime, capped at 100%, averaged over sessions.
+          Reach = distinct viewers of the title.
+        formula: avg_completion_rate = avg(min(watch_minutes / runtime, 1)); reach = count(distinct customer_id)
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [calendar_month, title_id]
+    columns:
+      - name: calendar_month
+        description: Month.
+        data_tests: [not_null]
+      - name: title_id
+        description: Title.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_content')
+                field: title_id
+      - name: sessions
+        description: Viewing sessions.
+      - name: reach
+        description: Distinct viewers.
+      - name: watch_hours
+        description: Hours watched.
+      - name: avg_completion_rate
+        description: Average completion rate.
+        data_tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                max_value: 1
+
+  - name: kpi_de_mrr_net_of_vat
+    description: >
+      Local extension for Germany: daily MRR net of VAT. Reuses kpi_subscribers_daily and only
+      adds the local view.
+    config:
+      meta:
+        owner: Market DE
+        scope: local
+        grain: day x plan (DE only)
+        definition: >
+          German consumer prices include VAT; local reporting shows MRR net of VAT at the
+          standard rate (var de_vat_rate, 19%).
+        formula: mrr_net_of_vat = mrr_gross / (1 + vat_rate)
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [date_day, plan_id]
+    columns:
+      - name: date_day
+        description: Day.
+      - name: plan_id
+        description: Plan.
+      - name: active_subscribers
+        description: Active paid subscriptions (from the global model).
+      - name: mrr_gross
+        description: MRR including VAT, in EUR.
+      - name: mrr_net_of_vat
+        description: MRR net of VAT, in EUR.
+      - name: vat_rate
+        description: VAT rate applied.

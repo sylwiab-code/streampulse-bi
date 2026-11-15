@@ -1,0 +1,18 @@
+snapshots:
+  - name: snap_plan_prices
+    description: SCD2 history of plan prices (check strategy on price and validity end).
+    relation: ref('stg_streampulse__plan_prices')
+    config:
+      unique_key: price_id
+      strategy: check
+      check_cols: [price_local, valid_to]
+
+  - name: snap_customers
+    description: >
+      SCD2 history of customer attributes (market and normalized email hash); no clear-text
+      PII, because dbt reads customers through the masking policy.
+    relation: ref('stg_streampulse__customers')
+    config:
+      unique_key: customer_id
+      strategy: check
+      check_cols: [market_code, email_hash]
