@@ -38,7 +38,13 @@ summarized as (
         subscriptions.created_at,
         subscriptions.is_trial,
         subscriptions.is_reactivation,
-        milestones.trial_started_at,
+        -- A trial starts when the subscription is created; this also covers a late
+        -- trial_started event.
+        iff(
+            subscriptions.is_trial,
+            coalesce(milestones.trial_started_at, subscriptions.created_at),
+            null
+        ) as trial_started_at,
         coalesce(milestones.trial_converted_at, milestones.trial_expired_at) as trial_ended_at,
         case
             when not subscriptions.is_trial then null
