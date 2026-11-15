@@ -14,10 +14,16 @@ dev = [
     "pre-commit>=4.7.0",
     "pytest>=9.2.0",
 ]
+# dbt (transform/dbt); pinned to one minor version because dbt minors change behavior.
+transform = [
+    "dbt-core>=1.12.7,<1.13",
+    "dbt-snowflake>=1.12.5,<1.13",
+]
 
 [tool.uv]
 # The root project holds shared developer tooling only; it is not an installable package.
 package = false
+default-groups = ["dev", "transform"]
 
 [tool.uv.workspace]
 # Each component is a package with its own dependencies; all share one lockfile (ADR-009).

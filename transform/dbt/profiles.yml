@@ -1,0 +1,16 @@
+# Connection profile (ADR-002). No credentials here: the values come from environment
+# variables that transform/run_dbt.py loads from the gitignored .env file.
+streampulse:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      private_key_path: "{{ env_var('SNOWFLAKE_PRIVATE_KEY_PATH') }}"
+      role: TRANSFORMER_DEV
+      warehouse: WH_TRANSFORM_DEV
+      database: STREAMPULSE_DEV
+      schema: STAGING
+      threads: 4
+      query_tag: streampulse-dbt
