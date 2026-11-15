@@ -17,7 +17,8 @@ Use this list when reviewing a pull request, in addition to the checklist in the
 
 ## SQL and dbt
 
-- The model name follows the layer prefix; one model per file, CTE style.
+- The model name follows the layer prefix; one model per file, CTE style ([dbt.md](dbt.md), [naming.md](naming.md)).
+- Column names are not SQL keywords (`date`, `value`, `name`, `type`, ...): descriptive, suffixed names; no quoted identifiers.
 - The YAML entry has a description; primary keys are tested for unique and not_null.
 - Marts have contracts; KPI models carry `meta` (owner, definition, grain, formula, scope).
 - Business rules come from an agreed definition, not from assumptions.

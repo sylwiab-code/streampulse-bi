@@ -64,4 +64,5 @@ All options marked "Chosen" above, decided together on 2026-11-14.
 ## More Information
 
 - Setup steps: [docs/guides/snowflake-setup.md](../guides/snowflake-setup.md).
+- [ADR-002](002-logic-split-between-dbt-and-power-bi.md) refines the tool boundary for dbt: Liquibase creates the dbt schemas (managed access), dbt owns the objects inside them.
 - Phase 2 in [PLAN.md](../../PLAN.md); generator output in [data_generator/README.md](../../data_generator/README.md).
