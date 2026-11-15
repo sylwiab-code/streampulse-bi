@@ -88,6 +88,16 @@ def test_cli_daily_writes_one_batch_per_day(tmp_path, read, capsys):
     assert "daily batch load_date=2024-12-31" in capsys.readouterr().out
 
 
+def test_cli_daily_refuses_dates_the_backfill_covers(tmp_path):
+    common = ["--scale", "0.2", "--output", str(tmp_path)]
+    assert main(["backfill", "--end-date", "2024-11-30", *common]) == 0
+    with pytest.raises(SystemExit, match="already covers 2024-11-30"):
+        main(["daily", "--days", "1", "--end-date", "2024-11-30", *common])
+    with pytest.raises(SystemExit, match="already covers"):
+        main(["daily", "--days", "2", "--end-date", "2024-12-01", *common])
+    assert main(["daily", "--days", "1", "--end-date", "2024-12-01", *common]) == 0
+
+
 def test_cli_backfill(tmp_path):
     args = ["backfill", "--end-date", "2024-11-30", "--scale", "0.2", "--output", str(tmp_path)]
     assert main(args) == 0

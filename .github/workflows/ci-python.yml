@@ -26,5 +26,17 @@ jobs:
           version: "0.13.7"
       - name: Install developer tools
         run: uv sync --locked
+      # dbt parse validates the project without a warehouse connection (ADR-002); the
+      # profile only needs placeholder values. tests/dbt checks the conventions in the manifest.
+      - name: Parse the dbt project
+        working-directory: transform/dbt
+        env:
+          DBT_PROFILES_DIR: .
+          SNOWFLAKE_ACCOUNT: offline
+          SNOWFLAKE_USER: offline
+          SNOWFLAKE_PRIVATE_KEY_PATH: offline
+        run: |
+          uv run dbt deps
+          uv run dbt parse
       - name: Run tests
         run: uv run pytest

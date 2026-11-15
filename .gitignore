@@ -17,3 +17,9 @@ __pycache__/
 
 # Generated data (data_generator output)
 data/
+
+# dbt (transform/dbt)
+transform/dbt/target/
+transform/dbt/dbt_packages/
+transform/dbt/logs/
+transform/dbt/.user.yml

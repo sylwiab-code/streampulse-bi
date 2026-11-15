@@ -1,0 +1,135 @@
+version: 2
+
+models:
+  - name: int_days_generated
+    description: "One row per day from the first to the last loaded day."
+    columns:
+      - name: date_day
+        description: "Day."
+        data_tests:
+          - unique
+          - not_null
+
+  - name: int_months_generated
+    description: "One row per month; month_end_date is the last loaded day for the current month."
+    columns:
+      - name: calendar_month
+        description: "Month."
+        data_tests:
+          - unique
+          - not_null
+      - name: month_end_date
+        description: "Month end (or last loaded day)."
+      - name: is_complete_month
+        description: "False for the current, partial month."
+
+  - name: int_subscriptions_summarized
+    description: "One row per subscription: trial outcome, paid start, churn date and type."
+    columns:
+      - name: subscription_id
+        description: "Subscription."
+        data_tests:
+          - unique
+          - not_null
+      - name: churn_type
+        description: "voluntary or involuntary."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['voluntary', 'involuntary']
+
+  - name: int_payments_enriched
+    description: "Payment attempts with recovered customer_id, billing months, and EUR amount."
+    columns:
+      - name: payment_id
+        description: "Payment attempt."
+        data_tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: "Customer."
+        data_tests:
+          - not_null
+      - name: billing_months
+        description: "Months per payment."
+        data_tests:
+          - not_null
+      - name: amount_eur
+        description: "Amount in EUR."
+        data_tests:
+          - not_null
+
+  - name: int_mrr_periods_derived
+    description: "MRR in force from each successful payment until the next one."
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [subscription_id, valid_from]
+    columns:
+      - name: subscription_id
+        description: "Subscription."
+        data_tests:
+          - not_null
+      - name: valid_from
+        description: "First day."
+        data_tests:
+          - not_null
+      - name: mrr_local
+        description: "Monthly-normalized amount."
+        data_tests:
+          - not_null
+
+  - name: int_subscription_days_expanded
+    description: "One row per subscription and day in trial or paid status with MRR."
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [date_day, subscription_id]
+    columns:
+      - name: date_day
+        description: "Day."
+      - name: subscription_id
+        description: "Subscription."
+
+  - name: int_customer_months_aggregated
+    description: >
+      Month-end MRR per customer with zero rows after the first paid month-end; input to the
+      movement classification.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [calendar_month, customer_id]
+    columns:
+      - name: calendar_month
+        description: "Month."
+      - name: customer_id
+        description: "Customer."
+      - name: has_paid_before
+        description: "Had MRR at an earlier month end."
+
+  - name: int_mrr_movements_classified
+    description: "MRR movements per customer and month, including the fx_effect row (unit-tested)."
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [calendar_month, customer_id, movement_type]
+    columns:
+      - name: movement_type
+        description: "Movement type."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['new', 'reactivation', 'expansion', 'contraction', 'churn', 'fx_effect']
+
+  - name: int_customers_flagged
+    description: "First paid date, cohort month, and the repeat-trial flag per customer."
+    columns:
+      - name: customer_id
+        description: "Customer."
+        data_tests:
+          - unique
+          - not_null
+      - name: is_repeat_trial
+        description: "Repeat trial (see dim_customer)."
+        data_tests:
+          - not_null

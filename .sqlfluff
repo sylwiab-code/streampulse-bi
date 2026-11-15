@@ -1,4 +1,5 @@
 [sqlfluff]
+exclude_rules = ST06
 dialect = snowflake
 # The jinja templater needs no database connection, so linting also works in CI
 # without secrets (ADR-001, D7). Revisit the dbt templater in Phase 3.
@@ -6,8 +7,9 @@ templater = jinja
 max_line_length = 100
 
 [sqlfluff:templater:jinja]
-# Provide dbt's ref(), source(), config(), etc. as stubs.
+# Provide dbt's ref(), source(), config(), etc. as stubs, plus the project's own macros.
 apply_dbt_builtins = True
+load_macros_from_path = transform/dbt/macros
 
 # CLAUDE.md: lowercase keywords and CTE-based style.
 [sqlfluff:rules:capitalisation.keywords]
@@ -28,3 +30,6 @@ forbid_subquery_in = both
 # Source column names that are also Snowflake keywords (user properties).
 [sqlfluff:rules:references.keywords]
 ignore_words = first_name,last_name,email
+
+# Column order follows meaning (keys, attributes, measures), not expression complexity;
+# see docs/standards/dbt.md.

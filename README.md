@@ -2,7 +2,7 @@
 
 End-to-end BI portfolio project for StreamPulse, a fictional subscription video-on-demand (OTT) service operating in Poland, Germany, Sweden, and Norway. Synthetic data flows through Snowflake, dbt, and Airflow into Power BI and Microsoft Fabric, with CI/CD, automated tests, and guarded AI-assisted development.
 
-**Status:** Phase 2 (Snowflake platform with Liquibase) complete: one Liquibase command builds the DEV environment from zero, the loader puts the generated batches into the raw layer, and integration tests verify masking per role; setup in [docs/guides/snowflake-setup.md](docs/guides/snowflake-setup.md). Phase 1 (synthetic data generator) is complete: `uv run generate backfill` and `uv run generate daily --days 1` write deterministic Parquet batches; see [data_generator/README.md](data_generator/README.md). Phase 0 (foundations) is complete: `main` is protected by a ruleset, and a pull request with a failing lint cannot be merged ([demo PR #8](https://github.com/sylwiab-code/streampulse-bi/pull/8)). The phases and their Definition of Done are in [PLAN.md](PLAN.md); design decisions are in [docs/adr](docs/adr/README.md).
+**Status:** Phase 3 (dbt transformations and KPI layer) complete: staging, intermediate, star-schema marts with contracts, and KPI models with their definitions build and test green on DEV; documentation at https://sylwiab-code.github.io/streampulse-bi/. Phase 2 (Snowflake platform with Liquibase) is complete: one Liquibase command builds the DEV environment from zero, the loader puts the generated batches into the raw layer, and integration tests verify masking per role; setup in [docs/guides/snowflake-setup.md](docs/guides/snowflake-setup.md). Phase 1 (synthetic data generator) is complete: `uv run generate backfill` and `uv run generate daily --days 1` write deterministic Parquet batches; see [data_generator/README.md](data_generator/README.md). Phase 0 (foundations) is complete: `main` is protected by a ruleset, and a pull request with a failing lint cannot be merged ([demo PR #8](https://github.com/sylwiab-code/streampulse-bi/pull/8)). The phases and their Definition of Done are in [PLAN.md](PLAN.md); design decisions are in [docs/adr](docs/adr/README.md).
 
 ## Local development
 
@@ -51,3 +51,17 @@ To change the rules, edit the file and send it with `--method PUT` to `repos/syl
 ## Snowflake
 
 The platform is defined in [database/](database/) and applied with Liquibase in Docker; the loader in [loader/](loader/) puts generated batches into the raw layer. One-time setup and the commands to build DEV, load data, and verify masking: [docs/guides/snowflake-setup.md](docs/guides/snowflake-setup.md).
+
+## dbt
+
+The transformation layer is in [transform/dbt/](transform/dbt/): staging, intermediate, marts (star schema), and KPI models, following [docs/standards/dbt.md](docs/standards/dbt.md). Which logic lives in dbt and which in Power BI, and the KPI definitions, are in [ADR-002](docs/adr/002-logic-split-between-dbt-and-power-bi.md).
+
+```bash
+uv run python transform/run_dbt.py deps
+```
+
+```bash
+uv run python transform/run_dbt.py build
+```
+
+The documentation site (lineage, tests, KPI definitions) is published to GitHub Pages on every merge: https://sylwiab-code.github.io/streampulse-bi/.

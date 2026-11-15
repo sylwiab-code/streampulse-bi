@@ -71,6 +71,43 @@ def test_roles_without_read_access_cannot_query_raw(settings, function, warehous
         query(settings, function, warehouse, "select count(*) from raw.customers")
 
 
+def test_transformer_hash_links_repeat_trial_emails(settings):
+    """The normalized email hash drops +tags, so repeat-trial sign-ups share a hash."""
+    (shared_hashes,) = query(
+        settings,
+        "transformer",
+        "transform",
+        "select count(*) from (select email from raw.customers "
+        "group by email having count(distinct customer_id) > 1)",
+    )
+    assert shared_hashes > 0
+
+
+@pytest.mark.parametrize("function", ["reporter", "ai_readonly"])
+def test_reporting_roles_read_marts_and_kpis(settings, function):
+    customers, subscriber_days = query(
+        settings,
+        function,
+        "report",
+        "select (select count(*) from marts.dim_customer), "
+        "(select count(*) from kpi.kpi_subscribers_daily)",
+    )
+    assert customers > 0
+    assert subscriber_days > 0
+
+
+def test_reporter_cannot_read_staging(settings):
+    from snowflake.connector.errors import ProgrammingError
+
+    with pytest.raises(ProgrammingError):
+        query(
+            settings,
+            "reporter",
+            "report",
+            "select count(*) from staging.stg_streampulse__customers",
+        )
+
+
 def test_timestamps_and_dates_load_correctly(settings):
     """Parquet logical types must be honored; otherwise timestamps land in the far future."""
     since, until = date(2024, 11, 1), date.today()

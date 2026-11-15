@@ -1,0 +1,49 @@
+# StreamPulse dbt project (ADR-002). Layers: staging -> intermediate -> marts -> kpi.
+# Run it with: uv run python transform/run_dbt.py build
+name: streampulse
+version: "1.0.0"
+config-version: 2
+profile: streampulse
+require-dbt-version: [">=1.12.0", "<1.13.0"]
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+test-paths: ["tests"]
+clean-targets: ["target", "dbt_packages", "logs"]
+
+flags:
+  send_anonymous_usage_stats: false
+
+vars:
+  # Reporting calendar for dim_date (full years for Power BI time intelligence).
+  calendar_start_date: "2024-01-01"
+  calendar_end_date: "2027-12-31"
+  # Cohort retention horizon in months (PLAN.md: 1-24).
+  cohort_max_months: 24
+  # VAT rate for the DE local extension (kpi_de_mrr_net_of_vat).
+  de_vat_rate: 0.19
+
+models:
+  streampulse:
+    +persist_docs:
+      relation: true
+      columns: true
+    staging:
+      +schema: staging
+      +materialized: view
+    intermediate:
+      +schema: intermediate
+      +materialized: table
+    marts:
+      +schema: marts
+      +materialized: table
+      +contract:
+        enforced: true
+    kpi:
+      +schema: kpi
+      +materialized: table
+
+snapshots:
+  streampulse:
+    +schema: snapshots

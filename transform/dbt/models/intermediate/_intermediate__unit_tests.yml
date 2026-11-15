@@ -1,0 +1,88 @@
+unit_tests:
+  - name: mrr_movements_cover_every_movement_type
+    description: >
+      Customer 1 (EUR) goes through new, expansion (price increase), contraction (downgrade),
+      churn, a month at zero, and reactivation. Customer 2 (PLN) keeps the same local MRR while
+      the exchange rate moves, which produces only an fx_effect row.
+    model: int_mrr_movements_classified
+    given:
+      - input: ref('int_customer_months_aggregated')
+        rows:
+          - {calendar_month: 2025-01-01, customer_id: 1, market_code: DE, currency_code: EUR,
+             mrr_local: 10, mrr_eur: 10, month_end_units_per_eur: 1, has_paid_before: false}
+          - {calendar_month: 2025-02-01, customer_id: 1, market_code: DE, currency_code: EUR,
+             mrr_local: 12, mrr_eur: 12, month_end_units_per_eur: 1, has_paid_before: true}
+          - {calendar_month: 2025-03-01, customer_id: 1, market_code: DE, currency_code: EUR,
+             mrr_local: 8, mrr_eur: 8, month_end_units_per_eur: 1, has_paid_before: true}
+          - {calendar_month: 2025-04-01, customer_id: 1, market_code: DE, currency_code: EUR,
+             mrr_local: 0, mrr_eur: 0, month_end_units_per_eur: 1, has_paid_before: true}
+          - {calendar_month: 2025-05-01, customer_id: 1, market_code: DE, currency_code: EUR,
+             mrr_local: 0, mrr_eur: 0, month_end_units_per_eur: 1, has_paid_before: true}
+          - {calendar_month: 2025-06-01, customer_id: 1, market_code: DE, currency_code: EUR,
+             mrr_local: 10, mrr_eur: 10, month_end_units_per_eur: 1, has_paid_before: true}
+          - {calendar_month: 2025-01-01, customer_id: 2, market_code: PL, currency_code: PLN,
+             mrr_local: 43, mrr_eur: 10, month_end_units_per_eur: 4.3, has_paid_before: false}
+          - {calendar_month: 2025-02-01, customer_id: 2, market_code: PL, currency_code: PLN,
+             mrr_local: 43, mrr_eur: 10.75, month_end_units_per_eur: 4.0, has_paid_before: true}
+    expect:
+      rows:
+        - {calendar_month: 2025-01-01, customer_id: 1, movement_type: new,
+           mrr_change_local: 10, mrr_change_eur: 10}
+        - {calendar_month: 2025-02-01, customer_id: 1, movement_type: expansion,
+           mrr_change_local: 2, mrr_change_eur: 2}
+        - {calendar_month: 2025-03-01, customer_id: 1, movement_type: contraction,
+           mrr_change_local: -4, mrr_change_eur: -4}
+        - {calendar_month: 2025-04-01, customer_id: 1, movement_type: churn,
+           mrr_change_local: -8, mrr_change_eur: -8}
+        - {calendar_month: 2025-06-01, customer_id: 1, movement_type: reactivation,
+           mrr_change_local: 10, mrr_change_eur: 10}
+        - {calendar_month: 2025-01-01, customer_id: 2, movement_type: new,
+           mrr_change_local: 43, mrr_change_eur: 10}
+        - {calendar_month: 2025-02-01, customer_id: 2, movement_type: fx_effect,
+           mrr_change_local: 0, mrr_change_eur: 0.75}
+
+  - name: churn_is_classified_by_type_and_expired_trials_are_not_churn
+    description: >
+      Voluntary churn takes effect at the end of the paid period, involuntary churn at the last
+      failed retry; an expired trial is not churn; a trial whose trial_started event is late
+      starts at the subscription's creation.
+    model: int_subscriptions_summarized
+    given:
+      - input: ref('stg_streampulse__subscriptions')
+        rows:
+          - {subscription_id: 100, customer_id: 1, market_code: DE, initial_plan_id: basic_monthly,
+             created_at: "2025-01-01 10:00:00", is_trial: true, is_reactivation: false}
+          - {subscription_id: 200, customer_id: 2, market_code: PL, initial_plan_id: basic_monthly,
+             created_at: "2025-01-05 09:00:00", is_trial: false, is_reactivation: false}
+          - {subscription_id: 300, customer_id: 3, market_code: SE, initial_plan_id: basic_monthly,
+             created_at: "2025-01-10 08:00:00", is_trial: true, is_reactivation: false}
+          - {subscription_id: 400, customer_id: 4, market_code: "NO", initial_plan_id: basic_monthly,
+             created_at: "2025-02-20 12:00:00", is_trial: true, is_reactivation: false}
+      - input: ref('stg_streampulse__subscription_events')
+        rows:
+          - {event_id: 1, subscription_id: 100, event_type: trial_started,
+             event_at: "2025-01-01 10:00:00"}
+          - {event_id: 2, subscription_id: 100, event_type: trial_converted,
+             event_at: "2025-01-08 10:00:00"}
+          - {event_id: 3, subscription_id: 100, event_type: cancelled,
+             event_at: "2025-02-20 18:00:00", cancellation_type: voluntary,
+             effective_date: 2025-03-08}
+          - {event_id: 4, subscription_id: 200, event_type: subscription_started,
+             event_at: "2025-01-05 09:00:00"}
+          - {event_id: 5, subscription_id: 200, event_type: cancelled,
+             event_at: "2025-02-12 09:00:00", cancellation_type: involuntary,
+             effective_date: 2025-02-12}
+          - {event_id: 6, subscription_id: 300, event_type: trial_started,
+             event_at: "2025-01-10 08:00:00"}
+          - {event_id: 7, subscription_id: 300, event_type: trial_expired,
+             event_at: "2025-01-17 08:00:00"}
+    expect:
+      rows:
+        - {subscription_id: 100, trial_outcome: converted, paid_start_date: 2025-01-08,
+           churn_type: voluntary, churn_date: 2025-03-08, trial_started_at: "2025-01-01 10:00:00"}
+        - {subscription_id: 200, trial_outcome: null, paid_start_date: 2025-01-05,
+           churn_type: involuntary, churn_date: 2025-02-12, trial_started_at: null}
+        - {subscription_id: 300, trial_outcome: expired, paid_start_date: null,
+           churn_type: null, churn_date: null, trial_started_at: "2025-01-10 08:00:00"}
+        - {subscription_id: 400, trial_outcome: in_trial, paid_start_date: null,
+           churn_type: null, churn_date: null, trial_started_at: "2025-02-20 12:00:00"}
