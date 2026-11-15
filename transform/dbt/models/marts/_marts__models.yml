@@ -1,0 +1,638 @@
+version: 2
+
+models:
+  - name: dim_date
+    description: "Reporting calendar, one row per day (full years for Power BI time intelligence)."
+    columns:
+      - name: date_day
+        data_type: date
+        description: "Calendar day."
+        data_tests:
+          - unique
+          - not_null
+      - name: calendar_month
+        data_type: date
+        description: "First day of the month."
+      - name: month_end_date
+        data_type: date
+        description: "Last day of the month."
+      - name: calendar_quarter
+        data_type: date
+        description: "First day of the quarter."
+      - name: calendar_year
+        data_type: number(38,0)
+        description: "Year number."
+      - name: month_number
+        data_type: number(38,0)
+        description: "Month number (1-12)."
+      - name: month_name
+        data_type: varchar
+        description: "Short month name."
+      - name: iso_week_number
+        data_type: number(38,0)
+        description: "ISO week number."
+      - name: iso_day_of_week
+        data_type: number(38,0)
+        description: "ISO day of week (1 = Monday)."
+      - name: day_name
+        data_type: varchar
+        description: "Short day name."
+      - name: is_weekend
+        data_type: boolean
+        description: "Saturday or Sunday."
+
+  - name: dim_market
+    description: "Markets with their local currency."
+    columns:
+      - name: market_code
+        data_type: varchar
+        description: "Market (country) code."
+        data_tests:
+          - unique
+          - not_null
+      - name: market_name
+        data_type: varchar
+        description: "Market name."
+      - name: currency_code
+        data_type: varchar
+        description: "Local currency."
+        data_tests:
+          - not_null
+      - name: currency_name
+        data_type: varchar
+        description: "Local currency name."
+
+  - name: dim_plan
+    description: "Subscription plans: tier and billing period."
+    columns:
+      - name: plan_id
+        data_type: varchar
+        description: "Plan, for example standard_monthly."
+        data_tests:
+          - unique
+          - not_null
+      - name: plan_name
+        data_type: varchar
+        description: "Display name."
+      - name: tier_name
+        data_type: varchar
+        description: "basic, standard, or premium."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['basic', 'standard', 'premium']
+      - name: tier_rank
+        data_type: number(38,0)
+        description: "1 = basic, 3 = premium."
+      - name: billing_period
+        data_type: varchar
+        description: "monthly or annual."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['monthly', 'annual']
+      - name: billing_months
+        data_type: number(38,0)
+        description: "Months covered by one payment (1 or 12)."
+
+  - name: dim_channel
+    description: "Acquisition channels; paid channels have campaigns and spend."
+    columns:
+      - name: acquisition_channel
+        data_type: varchar
+        description: "Channel name."
+        data_tests:
+          - unique
+          - not_null
+      - name: is_paid_channel
+        data_type: boolean
+        description: "True when the channel has campaigns with spend."
+
+  - name: dim_campaign
+    description: "Quarterly campaigns per market and paid channel."
+    columns:
+      - name: campaign_id
+        data_type: number(38,0)
+        description: "Campaign."
+        data_tests:
+          - unique
+          - not_null
+      - name: campaign_name
+        data_type: varchar
+        description: "Display name."
+      - name: market_code
+        data_type: varchar
+        description: "Market."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_market')
+                field: market_code
+      - name: acquisition_channel
+        data_type: varchar
+        description: "Paid channel."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_channel')
+                field: acquisition_channel
+      - name: start_date
+        data_type: date
+        description: "First day."
+      - name: end_date
+        data_type: date
+        description: "Last day."
+
+  - name: dim_content
+    description: "Content catalog: one row per title."
+    columns:
+      - name: title_id
+        data_type: number(38,0)
+        description: "Title."
+        data_tests:
+          - unique
+          - not_null
+      - name: title_name
+        data_type: varchar
+        description: "Title name."
+      - name: genre_name
+        data_type: varchar
+        description: "Genre."
+      - name: content_type
+        data_type: varchar
+        description: "movie or series."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['movie', 'series']
+      - name: runtime_minutes
+        data_type: number(38,0)
+        description: "Runtime (episode runtime for series)."
+      - name: release_year
+        data_type: number(38,0)
+        description: "Release year."
+      - name: added_date
+        data_type: date
+        description: "Day the title became available."
+
+  - name: dim_customer
+    description: "Customers without PII: market, acquisition, cohort, and the repeat-trial flag."
+    columns:
+      - name: customer_id
+        data_type: number(38,0)
+        description: "Customer."
+        data_tests:
+          - unique
+          - not_null
+      - name: market_code
+        data_type: varchar
+        description: "Market."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_market')
+                field: market_code
+      - name: signup_at
+        data_type: timestamp_ntz
+        description: "Sign-up time."
+      - name: signup_date
+        data_type: date
+        description: "Sign-up day."
+      - name: acquisition_channel
+        data_type: varchar
+        description: "Acquisition channel."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_channel')
+                field: acquisition_channel
+      - name: campaign_id
+        data_type: number(38,0)
+        description: "Acquisition campaign (paid channels only)."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_campaign')
+                field: campaign_id
+      - name: first_paid_date
+        data_type: date
+        description: "Day of the first successful payment; null if never paid."
+      - name: cohort_month
+        data_type: date
+        description: "Month of the first successful payment (retention cohort)."
+      - name: is_repeat_trial
+        data_type: boolean
+        description: >
+          An earlier customer with the same normalized email had an expired trial before
+          this sign-up.
+        data_tests:
+          - not_null
+
+  - name: fct_subscriptions
+    description: >
+      Accumulating snapshot: one row per subscription with trial outcome, paid start, and
+      churn.
+    columns:
+      - name: subscription_id
+        data_type: number(38,0)
+        description: "Subscription; a reactivation is a new subscription."
+        data_tests:
+          - unique
+          - not_null
+      - name: customer_id
+        data_type: number(38,0)
+        description: "Customer."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customer')
+                field: customer_id
+      - name: market_code
+        data_type: varchar
+        description: "Market."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_market')
+                field: market_code
+      - name: initial_plan_id
+        data_type: varchar
+        description: "Plan at start."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_plan')
+                field: plan_id
+      - name: created_at
+        data_type: timestamp_ntz
+        description: "Subscription start (trial or paid)."
+      - name: is_trial
+        data_type: boolean
+        description: "Started with a free trial."
+      - name: is_reactivation
+        data_type: boolean
+        description: "Started by a returning customer."
+      - name: trial_start_date
+        data_type: date
+        description: "Trial start."
+      - name: trial_end_date
+        data_type: date
+        description: "Trial end (conversion or expiry)."
+      - name: trial_outcome
+        data_type: varchar
+        description: "converted, expired, or in_trial; null without trial."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['converted', 'expired', 'in_trial']
+      - name: paid_start_date
+        data_type: date
+        description: "First paid day."
+      - name: churn_date
+        data_type: date
+        description: >
+          Churn date: end of the paid period (voluntary) or last failed retry
+          (involuntary).
+      - name: churn_type
+        data_type: varchar
+        description: "voluntary or involuntary; null while active."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['voluntary', 'involuntary']
+
+  - name: fct_subscription_daily
+    description: >
+      Periodic snapshot: one row per subscription and day in trial or paid status, with MRR.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [date_day, subscription_id]
+    columns:
+      - name: date_day
+        data_type: date
+        description: "Day."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: subscription_id
+        data_type: number(38,0)
+        description: "Subscription."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('fct_subscriptions')
+                field: subscription_id
+      - name: customer_id
+        data_type: number(38,0)
+        description: "Customer."
+        data_tests:
+          - not_null
+      - name: market_code
+        data_type: varchar
+        description: "Market."
+        data_tests:
+          - not_null
+      - name: plan_id
+        data_type: varchar
+        description: "Plan on that day."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_plan')
+                field: plan_id
+      - name: subscription_status
+        data_type: varchar
+        description: "trial or paid (paid includes payment-retry days)."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['trial', 'paid']
+      - name: currency_code
+        data_type: varchar
+        description: "Local currency."
+      - name: mrr_local
+        data_type: number(38,6)
+        description: "MRR in local currency (0 for trials)."
+        data_tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+      - name: mrr_eur
+        data_type: number(38,6)
+        description: "MRR in EUR at the day's exchange rate."
+        data_tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+
+  - name: fct_mrr_movements
+    description: >
+      Monthly MRR movements per customer (month-end vs previous month-end); fx_effect makes
+      the EUR bridge reconcile.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [calendar_month, customer_id, movement_type]
+    columns:
+      - name: calendar_month
+        data_type: date
+        description: "Month."
+        data_tests:
+          - not_null
+      - name: customer_id
+        data_type: number(38,0)
+        description: "Customer."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customer')
+                field: customer_id
+      - name: market_code
+        data_type: varchar
+        description: "Market."
+        data_tests:
+          - not_null
+      - name: movement_type
+        data_type: varchar
+        description: "new, reactivation, expansion, contraction, churn, or fx_effect."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['new', 'reactivation', 'expansion', 'contraction', 'churn', 'fx_effect']
+      - name: currency_code
+        data_type: varchar
+        description: "Local currency."
+      - name: mrr_change_local
+        data_type: number(38,6)
+        description: "Change in local currency (0 for fx_effect)."
+      - name: mrr_change_eur
+        data_type: number(38,6)
+        description: "Change in EUR at this month's month-end rate."
+
+  - name: fct_payments
+    description: "Payment attempts (up to three per billing period) in local currency and EUR."
+    columns:
+      - name: payment_id
+        data_type: number(38,0)
+        description: "Payment attempt."
+        data_tests:
+          - unique
+          - not_null
+      - name: subscription_id
+        data_type: number(38,0)
+        description: "Subscription."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('fct_subscriptions')
+                field: subscription_id
+      - name: customer_id
+        data_type: number(38,0)
+        description: "Customer (recovered from the subscription when the source omits it)."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customer')
+                field: customer_id
+      - name: market_code
+        data_type: varchar
+        description: "Market."
+      - name: plan_id
+        data_type: varchar
+        description: "Plan billed."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_plan')
+                field: plan_id
+      - name: billing_period_start
+        data_type: date
+        description: "Start of the billed period."
+      - name: attempt_number
+        data_type: number(38,0)
+        description: "1 = first attempt, 2-3 = retries."
+        data_tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 1
+                max_value: 3
+      - name: attempted_at
+        data_type: timestamp_ntz
+        description: "Attempt time."
+      - name: attempted_date
+        data_type: date
+        description: "Attempt day."
+      - name: payment_status
+        data_type: varchar
+        description: "succeeded or failed."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['succeeded', 'failed']
+      - name: failure_reason
+        data_type: varchar
+        description: "Reason for failed attempts."
+      - name: currency_code
+        data_type: varchar
+        description: "Local currency."
+      - name: amount_local
+        data_type: number(38,2)
+        description: "Amount in local currency."
+      - name: amount_eur
+        data_type: number(38,6)
+        description: "Amount in EUR at the day's rate."
+        data_tests:
+          - not_null
+
+  - name: fct_viewing_sessions
+    description: "Viewing sessions (incremental merge); sessions without customer_id are excluded."
+    columns:
+      - name: session_id
+        data_type: number(38,0)
+        description: "Session."
+        data_tests:
+          - unique
+          - not_null
+      - name: customer_id
+        data_type: number(38,0)
+        description: "Customer."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customer')
+                field: customer_id
+      - name: title_id
+        data_type: number(38,0)
+        description: "Title watched."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_content')
+                field: title_id
+      - name: started_at
+        data_type: timestamp_ntz
+        description: "Start time."
+      - name: started_date
+        data_type: date
+        description: "Start day."
+      - name: watch_minutes
+        data_type: number(38,0)
+        description: "Minutes watched."
+      - name: watch_hours
+        data_type: number(38,4)
+        description: "Hours watched."
+      - name: completion_rate
+        data_type: number(38,6)
+        description: "Minutes watched / runtime, capped at 1."
+        data_tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                max_value: 1
+      - name: device_type
+        data_type: varchar
+        description: "tv, mobile, web, or tablet (device before the 2026-01-01 schema change)."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['tv', 'mobile', 'web', 'tablet']
+      - name: app_version
+        data_type: varchar
+        description: "App version; null before the schema change."
+      - name: loaded_at
+        data_type: timestamp_ltz
+        description: "Load time of the source row (incremental watermark)."
+
+  - name: fct_campaign_spend
+    description: "Daily campaign spend in local currency and EUR."
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [spend_date, campaign_id]
+    columns:
+      - name: spend_date
+        data_type: date
+        description: "Day."
+        data_tests:
+          - not_null
+      - name: campaign_id
+        data_type: number(38,0)
+        description: "Campaign."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_campaign')
+                field: campaign_id
+      - name: market_code
+        data_type: varchar
+        description: "Market."
+      - name: acquisition_channel
+        data_type: varchar
+        description: "Paid channel."
+      - name: currency_code
+        data_type: varchar
+        description: "Local currency."
+      - name: spend_local
+        data_type: number(38,2)
+        description: "Spend in local currency."
+      - name: spend_eur
+        data_type: number(38,6)
+        description: "Spend in EUR at the day's rate."
+        data_tests:
+          - not_null
+
+  - name: fct_cohort_retention
+    description: >
+      Cohort retention: cohort = first payment month; retained in month k if active at the
+      end of month k (k = 0-24).
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [cohort_month, market_code, months_since_first_payment]
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: retained_customers <= cohort_customers
+    columns:
+      - name: cohort_month
+        data_type: date
+        description: "First payment month."
+        data_tests:
+          - not_null
+      - name: market_code
+        data_type: varchar
+        description: "Market."
+        data_tests:
+          - not_null
+      - name: months_since_first_payment
+        data_type: number(38,0)
+        description: "k: months after the cohort month (0-24)."
+        data_tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                max_value: 24
+      - name: calendar_month
+        data_type: date
+        description: "Month in which retention is measured."
+      - name: cohort_customers
+        data_type: number(38,0)
+        description: "Customers in the cohort."
+      - name: retained_customers
+        data_type: number(38,0)
+        description: "Cohort customers active at the end of month k."
