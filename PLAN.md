@@ -343,3 +343,4 @@ Each phase ends with a merged PR (or a series of PRs), updated docs, and green C
 | 007 | Deployment strategy (fabric-cicd vs deployment pipelines) |
 | 008 | Power BI and Fabric licensing (accepted: trials, started with Phase 5) |
 | 009 | Synthetic data generator design (Phase 1; accepted) |
+| 010 | Orchestration with Airflow (Phase 4; accepted) |
