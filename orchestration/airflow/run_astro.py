@@ -68,8 +68,11 @@ def prepare_build() -> None:
 
 
 def prepare_dbt_manifest() -> None:
-    for dbt_command in ("deps", "parse"):
-        run([sys.executable, "transform/run_dbt.py", dbt_command, "--quiet"])
+    # `dbt deps` reinstalls dbt_packages, which running containers read through the mount;
+    # only install when missing (after a packages.yml change, run `transform/run_dbt.py deps`).
+    if not (REPO / "transform" / "dbt" / "dbt_packages").is_dir():
+        run([sys.executable, "transform/run_dbt.py", "deps", "--quiet"])
+    run([sys.executable, "transform/run_dbt.py", "parse", "--quiet"])
 
 
 def main(argv: Sequence[str] | None = None) -> int:
