@@ -50,7 +50,7 @@ def test_every_dag_is_tagged_and_runs_one_at_a_time(dagbag):
 
 @pytest.mark.parametrize("dag_id", ["daily_pipeline", "backfill"])
 def test_ingestion_loads_after_generating_and_updates_the_raw_asset(dagbag, dag_id):
-    dag = dagbag.get_dag(dag_id)
+    dag = dagbag.dags[dag_id]
     load_raw = dag.get_task("load_raw")
     assert {t.task_id for t in load_raw.upstream_list} == {
         "generate_batch" if dag_id == "daily_pipeline" else "generate"
@@ -59,13 +59,13 @@ def test_ingestion_loads_after_generating_and_updates_the_raw_asset(dagbag, dag_
 
 
 def test_daily_pipeline_generates_the_previous_day(dagbag):
-    command = dagbag.get_dag("daily_pipeline").get_task("generate_batch").bash_command
+    command = dagbag.dags["daily_pipeline"].get_task("generate_batch").bash_command
     assert "macros.ds_add(ds, -1)" in command
 
 
 def test_transform_runs_when_raw_changes(dagbag):
-    dag = dagbag.get_dag("transform_pipeline")
-    assert "streampulse_raw_dev" in json.dumps(dag.timetable.serialize(), default=str)
+    dag = dagbag.dags["transform_pipeline"]
+    assert "streampulse_raw_dev" in str(dag.timetable.asset_condition)
 
 
 def test_transform_has_a_run_task_per_dbt_model(dagbag):
@@ -75,13 +75,13 @@ def test_transform_has_a_run_task_per_dbt_model(dagbag):
         for node in manifest["nodes"].values()
         if node["resource_type"] == "model" and node["package_name"] == "streampulse"
     }
-    task_ids = set(dagbag.get_dag("transform_pipeline").task_ids)
-    missing = sorted(m for m in models if f"dbt_build.{m}_run" not in task_ids)
+    task_ids = set(dagbag.dags["transform_pipeline"].task_ids)
+    missing = sorted(m for m in models if f"dbt_build.{m}.run" not in task_ids)
     assert missing == []
 
 
 def test_power_bi_steps_follow_dbt_and_success_is_reported_when_they_are_skipped(dagbag):
-    dag = dagbag.get_dag("transform_pipeline")
+    dag = dagbag.dags["transform_pipeline"]
     chain = ["power_bi_enabled", "refresh_power_bi", "wait_for_power_bi_refresh"]
     chain += ["validate_power_bi", "notify_success"]
     for upstream, downstream in itertools.pairwise(chain):
@@ -93,7 +93,7 @@ def test_power_bi_steps_follow_dbt_and_success_is_reported_when_they_are_skipped
 
 
 def test_power_bi_is_off_unless_enabled(monkeypatch, dagbag):
-    callable_ = dagbag.get_dag("transform_pipeline").get_task("power_bi_enabled").python_callable
+    callable_ = dagbag.dags["transform_pipeline"].get_task("power_bi_enabled").python_callable
     monkeypatch.delenv("POWERBI_ENABLED", raising=False)
     assert callable_() is False
     monkeypatch.setenv("POWERBI_ENABLED", "true")
@@ -101,7 +101,7 @@ def test_power_bi_is_off_unless_enabled(monkeypatch, dagbag):
 
 
 def test_maintenance_only_lists_ci_schemas_by_default(dagbag):
-    dag = dagbag.get_dag("maintenance")
+    dag = dagbag.dags["maintenance"]
     assert dag.params["execute"] is False
     assert "--execute" in dag.get_task("clean_ci_schemas").bash_command  # rendered only if set
 
