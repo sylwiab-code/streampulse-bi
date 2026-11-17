@@ -23,7 +23,9 @@ def dagbag() -> DagBag:
     manifest = DBT_PROJECT_DIR / "target" / "manifest.json"
     if not manifest.is_file():
         pytest.fail(f"dbt manifest missing at {manifest}; run `dbt parse` first")
-    return DagBag(dag_folder=str(DAGS_FOLDER), include_examples=False)
+    # Example DAGs are off through AIRFLOW__CORE__LOAD_EXAMPLES (conftest); upstream Airflow 3.3
+    # no longer accepts include_examples, while the Astro build still does.
+    return DagBag(dag_folder=str(DAGS_FOLDER))
 
 
 def test_dags_import_without_errors(dagbag):
