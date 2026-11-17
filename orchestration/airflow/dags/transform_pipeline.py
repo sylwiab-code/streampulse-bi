@@ -46,7 +46,11 @@ with DAG(
             profiles_yml_filepath=DBT_PROJECT_DIR / "profiles.yml",
         ),
         execution_config=ExecutionConfig(dbt_executable_path=DBT_EXECUTABLE),
-        render_config=RenderConfig(load_method=LoadMode.DBT_MANIFEST),
+        # Tests that read several models (relationships, the MRR bridge) get their own task
+        # after all of those models, as in `dbt build`; otherwise they run against stale data.
+        render_config=RenderConfig(
+            load_method=LoadMode.DBT_MANIFEST, should_detach_multiple_parents_tests=True
+        ),
         default_args=DEFAULT_ARGS,
     )
     check_power_bi = ShortCircuitOperator(

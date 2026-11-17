@@ -80,6 +80,16 @@ def test_transform_has_a_run_task_per_dbt_model(dagbag):
     assert missing == []
 
 
+def test_tests_with_several_parents_run_after_all_of_them(dagbag):
+    """The MRR bridge test reads two models; it must wait for both (detached test task)."""
+    dag = dagbag.dags["transform_pipeline"]
+    bridge = [t for t in dag.task_ids if "assert_mrr_bridge_reconciles" in t]
+    assert len(bridge) == 1
+    upstream = dag.get_task(bridge[0]).upstream_task_ids
+    for model in ("int_customer_months_aggregated", "fct_mrr_movements"):
+        assert any(task_id.startswith(f"dbt_build.{model}.") for task_id in upstream), model
+
+
 def test_power_bi_steps_follow_dbt_and_success_is_reported_when_they_are_skipped(dagbag):
     dag = dagbag.dags["transform_pipeline"]
     chain = ["power_bi_enabled", "refresh_power_bi", "wait_for_power_bi_refresh"]
