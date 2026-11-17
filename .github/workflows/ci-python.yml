@@ -40,3 +40,11 @@ jobs:
           uv run dbt parse
       - name: Run tests
         run: uv run pytest
+      # Airflow has its own uv project (ADR-010); the DAG tests read the dbt manifest from above.
+      - name: Run the DAG tests
+        working-directory: orchestration/airflow
+        env:
+          AIRFLOW_HOME: ${{ runner.temp }}/airflow
+        run: |
+          uv sync --locked
+          uv run pytest

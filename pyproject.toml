@@ -7,6 +7,7 @@ requires-python = "==3.12.*"
 dependencies = [
     "streampulse-generator",
     "streampulse-loader",
+    "streampulse-powerbi",
 ]
 
 [dependency-groups]
@@ -27,11 +28,14 @@ default-groups = ["dev", "transform"]
 
 [tool.uv.workspace]
 # Each component is a package with its own dependencies; all share one lockfile (ADR-009).
-members = ["data_generator", "loader"]
+members = ["data_generator", "loader", "powerbi"]
+# Airflow has its own project and lockfile (ADR-010).
+exclude = ["orchestration/airflow"]
 
 [tool.uv.sources]
 streampulse-generator = { workspace = true }
 streampulse-loader = { workspace = true }
+streampulse-powerbi = { workspace = true }
 
 [tool.ruff]
 target-version = "py312"
@@ -50,8 +54,8 @@ select = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["streampulse_generator", "streampulse_loader"]
+known-first-party = ["streampulse_generator", "streampulse_loader", "streampulse_powerbi"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests", "data_generator/tests", "loader/tests"]
+testpaths = ["tests", "data_generator/tests", "loader/tests", "powerbi/tests"]
 addopts = ["-ra", "--strict-markers", "--strict-config", "--import-mode=importlib"]

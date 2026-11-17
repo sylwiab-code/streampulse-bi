@@ -7,6 +7,7 @@ members = [
     "streampulse-bi",
     "streampulse-generator",
     "streampulse-loader",
+    "streampulse-powerbi",
 ]
 
 [[package]]
@@ -1080,6 +1081,7 @@ default-groups = ["dev", "transform"]
 dependencies = [
     { name = "streampulse-generator" },
     { name = "streampulse-loader" },
+    { name = "streampulse-powerbi" },
 ]
 
 [package.dev-dependencies]
@@ -1096,6 +1098,7 @@ transform = [
 requires-dist = [
     { name = "streampulse-generator", editable = "data_generator" },
     { name = "streampulse-loader", editable = "loader" },
+    { name = "streampulse-powerbi", editable = "powerbi" },
 ]
 
 [package.metadata.requires-dev]
@@ -1135,6 +1138,17 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [{ name = "snowflake-connector-python", specifier = ">=5.2.0" }]
+
+[[package]]
+name = "streampulse-powerbi"
+version = "0.1.0"
+source = { editable = "powerbi" }
+dependencies = [
+    { name = "streampulse-loader" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "streampulse-loader", editable = "loader" }]
 
 [[package]]
 name = "tabulate"

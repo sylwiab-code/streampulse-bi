@@ -23,3 +23,6 @@ transform/dbt/target/
 transform/dbt/dbt_packages/
 transform/dbt/logs/
 transform/dbt/.user.yml
+
+# Astro build context prepared by orchestration/airflow/run_astro.py
+orchestration/airflow/build/

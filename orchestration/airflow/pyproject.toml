@@ -1,0 +1,23 @@
+# Separate uv project for the Astro/Airflow code (ADR-010). Airflow pins many libraries, so it
+# is kept out of the main workspace. This environment runs the DAG tests locally and in CI;
+# the Docker image installs Airflow from the Astro Runtime instead.
+[project]
+name = "streampulse-airflow"
+version = "0.1.0"
+description = "StreamPulse Airflow DAGs (Astro project)"
+requires-python = "==3.12.*"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "apache-airflow==3.3.2",
+    "astronomer-cosmos==1.16.0",
+    "pytest>=9.2.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["-ra", "--strict-markers", "--strict-config"]
