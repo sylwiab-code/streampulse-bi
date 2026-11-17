@@ -1,11 +1,12 @@
 # Local mounts for the StreamPulse Astro project (ADR-010). Start it through run_astro.py,
 # which sets STREAMPULSE_REPO_DIR and STREAMPULSE_KEY_FILE for the substitutions below. The
-# DEV key file is mounted read-only and never enters the image.
+# DEV key file is mounted read-only; the entrypoint copies it with mode 600 for the astro
+# user (include/streampulse_entrypoint.sh). It never enters the image.
 x-streampulse: &streampulse
   volumes:
     - ${STREAMPULSE_REPO_DIR}/transform/dbt:/usr/local/airflow/dbt/streampulse
     - ${STREAMPULSE_REPO_DIR}/data:/usr/local/airflow/data
-    - ${STREAMPULSE_KEY_FILE}:/usr/local/airflow/secrets/snowflake_key.p8:ro
+    - ${STREAMPULSE_KEY_FILE}:/run/streampulse/snowflake_key.p8:ro
   environment:
     SNOWFLAKE_PRIVATE_KEY_PATH: /usr/local/airflow/secrets/snowflake_key.p8
 

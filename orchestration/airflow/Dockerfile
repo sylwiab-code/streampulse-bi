@@ -13,3 +13,10 @@ RUN python -m venv /usr/local/airflow/dbt_venv \
         -r /tmp/streampulse-build/requirements-streampulse.txt \
     && /usr/local/airflow/streampulse_venv/bin/pip install --no-cache-dir --no-deps \
         /tmp/streampulse-build/wheels/*.whl
+
+# The DEV key is mounted read-only at /run/streampulse and copied with mode 600 at start-up;
+# it is never part of the image.
+RUN mkdir -p /usr/local/airflow/secrets \
+    && chmod 700 /usr/local/airflow/secrets \
+    && chmod 755 /usr/local/airflow/include/streampulse_entrypoint.sh
+ENTRYPOINT ["tini", "--", "/usr/local/airflow/include/streampulse_entrypoint.sh"]
