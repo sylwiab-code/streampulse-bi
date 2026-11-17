@@ -36,6 +36,11 @@ All options marked "Chosen" above, decided together on 2026-11-16.
 
 **Idempotency.** Generating a day replaces that day's batch with identical files; the loader skips files already staged and loaded; dbt incremental models merge on natural keys. Rerunning any task is safe.
 
+**Lessons from the first end-to-end runs.**
+
+- Cosmos runs a model's tests right after the model. Tests that read several models (relationships, the MRR bridge) then ran against a parent that was not rebuilt yet. They now run as detached tasks after all their parents (`should_detach_multiple_parents_tests`), as in `dbt build`.
+- The Snowflake connector refuses private key files that others can write to, and Docker Desktop on Windows shows bind mounts that way. The key is mounted read-only and copied with mode 600 by the container entrypoint; the connector's check stays on.
+
 ### Consequences
 
 - Good, because the DAGs are thin and every step is a command that also runs and is tested outside Airflow.
