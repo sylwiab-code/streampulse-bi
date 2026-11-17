@@ -36,3 +36,11 @@ uv run python orchestration/airflow/run_astro.py test
 ```
 
 This builds the image and runs `tests/` inside it (Airflow does not run on native Windows). CI runs the same tests on Linux with the separate uv project in this folder (`pyproject.toml`, `uv.lock`).
+
+One complete DAG run, without the Astro CLI (`airflow dags test` in a throwaway container with the same mounts and environment):
+
+```bash
+uv run python orchestration/airflow/run_astro.py dags-test daily_pipeline 2026-11-17
+```
+
+The Snowflake connector refuses private key files that others can write to, and Docker Desktop on Windows shows bind-mounted files that way. The key is therefore mounted read-only at `/run/streampulse/` and copied with mode 600 by the container entrypoint (`include/streampulse_entrypoint.sh`).
