@@ -1,20 +1,29 @@
 /// Row-level security mapping: the markets each user may see (seed security_market_access). Hidden; used only by the Market role.
 table 'Security Market Access'
 	isHidden
+	lineageTag: d5ce7f33-f19c-4874-aa06-e32db58abf12
 
 	/// User principal name (sign-in name), lowercase.
 	column 'User Principal Name'
 		dataType: string
 		isHidden
+		isAvailableInMdx: false
+		lineageTag: 6210912d-19b3-4f7f-af3a-e0dc906dd889
 		summarizeBy: none
 		sourceColumn: USER_PRINCIPAL_NAME
+
+		annotation SummarizationSetBy = User
 
 	/// Market the user may see.
 	column 'Market Code'
 		dataType: string
 		isHidden
+		isAvailableInMdx: false
+		lineageTag: b61e5d2c-1525-4b9d-94e6-d073c4fe3f29
 		summarizeBy: none
 		sourceColumn: MARKET_CODE
+
+		annotation SummarizationSetBy = User
 
 	partition 'Security Market Access' = m
 		mode: import

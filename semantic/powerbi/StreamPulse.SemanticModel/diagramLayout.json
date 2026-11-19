@@ -1,0 +1,262 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 0,
+        "y": 0
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 1240.9128187996321,
+            "y": -50
+          },
+          "nodeIndex": "Acquisition Cost",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 441.19981871940581,
+            "y": 1482.9039814619507
+          },
+          "nodeIndex": "Churn",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 620.84193191729617,
+            "y": 671.4782768721243
+          },
+          "nodeIndex": "DE MRR Net of VAT",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 337.57546264021585,
+            "y": 318.50107979953555
+          },
+          "nodeIndex": "Subscribers Daily",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1414.3685571111043,
+            "y": 303.65862714415289
+          },
+          "nodeIndex": "Trial Conversion",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1725.70958138182,
+            "y": 1051.6138737947731
+          },
+          "nodeIndex": "Campaign",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1701.3337880743363,
+            "y": 226.31606046566367
+          },
+          "nodeIndex": "Channel",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1128.5562404843467,
+            "y": 580.13762725035645
+          },
+          "nodeIndex": "Cohort Retention",
+          "size": {
+            "height": 272,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1255.9873537935659,
+            "y": 1798.2233537306363
+          },
+          "nodeIndex": "Content",
+          "size": {
+            "height": 248,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1052.6243207896327,
+            "y": 903.83474936525045
+          },
+          "nodeIndex": "Customer",
+          "size": {
+            "height": 272,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1152.8121035429222,
+            "y": 1227.1763831913815
+          },
+          "nodeIndex": "Date",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1959.70958138182,
+            "y": 972.11167686531826
+          },
+          "nodeIndex": "Dimension Selector",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 2243.70958138182,
+            "y": 972.11167686531826
+          },
+          "nodeIndex": "KPI Selector",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 843.63371674126643,
+            "y": 443.4099005776402
+          },
+          "nodeIndex": "Market",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 442.54801557354835,
+            "y": 1136.4474600441749
+          },
+          "nodeIndex": "MRR Movements",
+          "size": {
+            "height": 296,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 335.91974033411975,
+            "y": 783.40289560145766
+          },
+          "nodeIndex": "Payments",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 50,
+            "y": 984.9226272680246
+          },
+          "nodeIndex": "Plan",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 2527.70958138182,
+            "y": 984.11167686531826
+          },
+          "nodeIndex": "Security Market Access",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 2811.70958138182,
+            "y": 984.11167686531826
+          },
+          "nodeIndex": "Time Intelligence",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1438.6235255433742,
+            "y": 1280.5438569893442
+          },
+          "nodeIndex": "Viewing Sessions",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        }
+      ],
+      "name": "Wszystkie tabele",
+      "zoomValue": 100,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "Wszystkie tabele",
+  "defaultDiagram": "Wszystkie tabele"
+}

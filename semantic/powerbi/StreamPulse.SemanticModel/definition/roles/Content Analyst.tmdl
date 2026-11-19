@@ -30,3 +30,5 @@ role 'Content Analyst'
 
 		columnPermission mrr_net_of_vat = none
 
+	annotation PBI_Id = e3c94e70612d46e8b6b6beb7a33857b4
+

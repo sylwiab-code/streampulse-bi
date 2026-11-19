@@ -1,8 +1,10 @@
 /// Field parameter: lets report users switch the breakdown of a visual. Measures from tables not related to the chosen dimension show their total.
 table 'Dimension Selector'
+	lineageTag: 714c88f3-e9f7-4b35-9d17-90f6f90dd18f
 
 	/// Dimension used to break down the visual.
 	column Dimension
+		lineageTag: 3b5cfd58-17f5-41ec-90b7-e94b31014239
 		summarizeBy: none
 		sourceColumn: [Value1]
 		sortByColumn: 'Dimension Order'
@@ -10,22 +12,34 @@ table 'Dimension Selector'
 		relatedColumnDetails
 			groupByColumn: 'Dimension Fields'
 
+		annotation SummarizationSetBy = User
+
 	/// Column behind each dimension (field parameter metadata).
 	column 'Dimension Fields'
 		isHidden
+		lineageTag: 7f3491f3-8818-47b5-8f65-3c9694796a73
 		summarizeBy: none
 		sourceColumn: [Value2]
 
-		extendedProperty ParameterMetadata = {"version":3,"kind":2}
+		extendedProperty ParameterMetadata =
+				{
+				  "version": 3,
+				  "kind": 2
+				}
 
-		annotation BestPracticeAnalyzer_IgnoreRules = {"RuleIDs":["UNNECESSARY_COLUMNS"]}
+		annotation BestPracticeAnalyzer_IgnoreRules = {"RuleIDs":["UNNECESSARY_COLUMNS","ISAVAILABLEINMDX_FALSE_NONATTRIBUTE_COLUMNS"]}
+
+		annotation SummarizationSetBy = User
 
 	/// Order of the dimensions.
 	column 'Dimension Order'
 		isHidden
 		formatString: 0
+		lineageTag: 485471a3-e6dc-48b6-b589-68f01d0c3a3e
 		summarizeBy: none
 		sourceColumn: [Value3]
+
+		annotation SummarizationSetBy = User
 
 	partition 'Dimension Selector' = calculated
 		mode: import

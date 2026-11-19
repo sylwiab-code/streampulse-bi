@@ -1,5 +1,6 @@
 /// Active subscribers, trialists, and MRR per day, market, and plan (kpi_subscribers_daily). Snapshot table: measures take the last day of the period, never a sum over days.
 table 'Subscribers Daily'
+	lineageTag: eb8e8ead-83c7-48db-8006-7e41c1ac0fdb
 
 	/// Paid subscriptions active on the last day of the period (the last loaded day for the current period). Payment-retry days count as active; trials do not.
 	measure 'Active Subscribers' =
@@ -12,6 +13,7 @@ table 'Subscribers Daily'
 			    )
 		formatString: #,0
 		displayFolder: Subscribers
+		lineageTag: 189115da-9f43-41ab-99ee-29b8701d4285
 
 	/// Subscriptions in a free trial on the last day of the period.
 	measure Trialists =
@@ -24,6 +26,7 @@ table 'Subscribers Daily'
 			    )
 		formatString: #,0
 		displayFolder: Subscribers
+		lineageTag: c13fb574-de40-422f-b2fd-5c7a33b020db
 
 	/// Monthly recurring revenue in EUR on the last day of the period: plan price normalized to a month (annual / 12) at the day's exchange rate.
 	measure 'MRR (EUR)' =
@@ -36,6 +39,7 @@ table 'Subscribers Daily'
 			    )
 		formatString: \€#,0
 		displayFolder: Revenue
+		lineageTag: 81769a3d-6cd6-4717-9d21-25d1920a0fe8
 
 	/// MRR in the market's local currency on the last day of the period. Blank unless one currency is in context.
 	measure 'MRR (Local Currency)' =
@@ -47,6 +51,7 @@ table 'Subscribers Daily'
 			        CALCULATE ( SUM ( 'Subscribers Daily'[mrr_local] ), 'Date'[Date] = PeriodEnd )
 			    )
 		displayFolder: Revenue
+		lineageTag: ee97cfce-2924-49c8-b5ed-5720c5eec32d
 
 		formatStringDefinition = "#,0 """ & SELECTEDVALUE ( 'Market'[Currency Code] ) & """"
 
@@ -61,73 +66,109 @@ table 'Subscribers Daily'
 			    )
 		formatString: \€#,0
 		displayFolder: Revenue
+		lineageTag: cc77082c-ddb4-4dae-9ce5-5d3b6dfe65cc
 
 	/// Average revenue per user in EUR: MRR / active subscribers at the end of the period.
 	measure 'ARPU (EUR)' = DIVIDE ( [MRR (EUR)], [Active Subscribers] )
 		formatString: \€#,0.00
 		displayFolder: Revenue
+		lineageTag: d4e524d5-1402-490d-a794-7046d8ae49df
 
 	/// Day.
 	column date_day
 		dataType: dateTime
 		isHidden
 		formatString: yyyy-mm-dd
+		isAvailableInMdx: false
+		lineageTag: 53c14afa-f552-442b-b375-6732fe3a4998
 		summarizeBy: none
 		sourceColumn: DATE_DAY
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation SummarizationSetBy = User
 
 	/// Market key.
 	column market_code
 		dataType: string
 		isHidden
+		isAvailableInMdx: false
+		lineageTag: 8d15d7c7-8ada-443f-88b5-a35b4d061dcb
 		summarizeBy: none
 		sourceColumn: MARKET_CODE
+
+		annotation SummarizationSetBy = User
 
 	/// Plan key.
 	column plan_id
 		dataType: string
 		isHidden
+		isAvailableInMdx: false
+		lineageTag: 217e7611-b642-42ed-bc16-000dae94eae4
 		summarizeBy: none
 		sourceColumn: PLAN_ID
+
+		annotation SummarizationSetBy = User
 
 	/// Paid subscriptions active on the day.
 	column active_subscribers
 		dataType: int64
 		isHidden
 		formatString: #,0
+		isAvailableInMdx: false
+		lineageTag: 0ae50333-a5c2-4ee7-ad4c-ebf86b49c9fd
 		summarizeBy: none
 		sourceColumn: ACTIVE_SUBSCRIBERS
+
+		annotation SummarizationSetBy = User
 
 	/// Subscriptions in a free trial on the day.
 	column daily_trialists
 		dataType: int64
 		isHidden
 		formatString: #,0
+		isAvailableInMdx: false
+		lineageTag: 7a597018-8285-4548-af0d-53c0ae470994
 		summarizeBy: none
 		sourceColumn: TRIALISTS
+
+		annotation SummarizationSetBy = User
 
 	/// MRR in local currency.
 	column mrr_local
 		dataType: decimal
 		isHidden
 		formatString: #,0.00
+		isAvailableInMdx: false
+		lineageTag: 99e10457-be4a-4f6a-9df2-bdb77d7100e4
 		summarizeBy: none
 		sourceColumn: MRR_LOCAL
+
+		annotation SummarizationSetBy = User
 
 	/// MRR in EUR.
 	column mrr_eur
 		dataType: decimal
 		isHidden
 		formatString: #,0.00
+		isAvailableInMdx: false
+		lineageTag: fd3bbe40-e779-4d5b-b06f-092ac40d137c
 		summarizeBy: none
 		sourceColumn: MRR_EUR
+
+		annotation SummarizationSetBy = User
 
 	/// ARR in EUR (MRR x 12).
 	column arr_eur
 		dataType: decimal
 		isHidden
 		formatString: #,0.00
+		isAvailableInMdx: false
+		lineageTag: 740fee35-2ddf-43db-8832-960adc33dd29
 		summarizeBy: none
 		sourceColumn: ARR_EUR
+
+		annotation SummarizationSetBy = User
 
 	partition 'Subscribers Daily' = m
 		mode: import

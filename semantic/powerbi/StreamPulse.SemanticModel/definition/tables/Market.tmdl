@@ -1,30 +1,43 @@
 /// Markets with their local currency (dim_market). Row-level security starts here.
 table Market
+	lineageTag: 5046cd79-50ae-4a0b-b566-fd34aaa648ec
 
 	/// Market (country) code, for example DE.
 	column 'Market Code'
 		dataType: string
 		isKey
+		lineageTag: 2a7228cd-a1d5-4818-ab24-c4b9ce8cd410
 		summarizeBy: none
 		sourceColumn: MARKET_CODE
+
+		annotation SummarizationSetBy = User
 
 	/// Market name.
 	column Market
 		dataType: string
+		lineageTag: 5e254795-7846-4672-aed0-b67fb44c2a98
 		summarizeBy: none
 		sourceColumn: MARKET_NAME
+
+		annotation SummarizationSetBy = User
 
 	/// Local currency code, for example SEK.
 	column 'Currency Code'
 		dataType: string
+		lineageTag: 86487f2f-6e82-45a3-804b-a5ac502d25ec
 		summarizeBy: none
 		sourceColumn: CURRENCY_CODE
+
+		annotation SummarizationSetBy = User
 
 	/// Local currency name.
 	column Currency
 		dataType: string
+		lineageTag: d9e48a7a-b15e-4175-8256-80fe213d0179
 		summarizeBy: none
 		sourceColumn: CURRENCY_NAME
+
+		annotation SummarizationSetBy = User
 
 	partition Market = m
 		mode: import

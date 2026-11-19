@@ -1,5 +1,6 @@
 /// Logo retention by first-payment cohort for months 0-24 (kpi_cohort_retention). Related to Date by the cohort month.
 table 'Cohort Retention'
+	lineageTag: 246cf86b-2bd4-465b-b6d4-b0abc9cb9e45
 
 	/// Customers in the cohort (counted at month 0, so the value does not grow with the months shown).
 	measure 'Cohort Customers' =
@@ -9,54 +10,78 @@ table 'Cohort Retention'
 			)
 		formatString: #,0
 		displayFolder: Retention
+		lineageTag: 7e77a902-af35-46c0-a762-4efb923361aa
 
 	/// Cohort customers active (MRR > 0) at the end of month k after the cohort month.
 	measure 'Retained Customers' = SUM ( 'Cohort Retention'[retained_customers] )
 		formatString: #,0
 		displayFolder: Retention
+		lineageTag: a08873f5-a362-4c33-898c-ed009e0e20ab
 
 	/// Retained customers / cohort customers for each month k; over several k it is the average weighted by cohort size.
 	measure 'Retention Rate' = DIVIDE ( SUM ( 'Cohort Retention'[retained_customers] ), SUM ( 'Cohort Retention'[cohort_customers] ) )
 		formatString: #,0.0%;-#,0.0%;#,0.0%
 		displayFolder: Retention
+		lineageTag: d6fa83f6-7919-40bb-b286-9df8b254071b
 
 	/// First payment month (first day).
 	column cohort_month
 		dataType: dateTime
 		isHidden
 		formatString: yyyy-mm-dd
+		isAvailableInMdx: false
+		lineageTag: 89fbbc40-7f59-4919-88de-86450172ae25
 		summarizeBy: none
 		sourceColumn: COHORT_MONTH
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation SummarizationSetBy = User
 
 	/// Market key.
 	column market_code
 		dataType: string
 		isHidden
+		isAvailableInMdx: false
+		lineageTag: a03d8ea0-ef6f-4403-ba47-aec04bb17995
 		summarizeBy: none
 		sourceColumn: MARKET_CODE
+
+		annotation SummarizationSetBy = User
 
 	/// k: months after the cohort month (0-24).
 	column 'Months Since First Payment'
 		dataType: int64
 		formatString: 0
+		lineageTag: 33419d10-8cb0-4fe8-a739-cbbbc4b170f7
 		summarizeBy: none
 		sourceColumn: MONTHS_SINCE_FIRST_PAYMENT
+
+		annotation SummarizationSetBy = User
 
 	/// Customers in the cohort.
 	column cohort_customers
 		dataType: int64
 		isHidden
 		formatString: #,0
+		isAvailableInMdx: false
+		lineageTag: 107179e6-ff27-4127-ac8d-5ad8ea5f37b0
 		summarizeBy: none
 		sourceColumn: COHORT_CUSTOMERS
+
+		annotation SummarizationSetBy = User
 
 	/// Cohort customers active at the end of month k.
 	column retained_customers
 		dataType: int64
 		isHidden
 		formatString: #,0
+		isAvailableInMdx: false
+		lineageTag: 2788e658-5396-4775-9ce6-871eac1b0dc8
 		summarizeBy: none
 		sourceColumn: RETAINED_CUSTOMERS
+
+		annotation SummarizationSetBy = User
 
 	partition 'Cohort Retention' = m
 		mode: import

@@ -1,5 +1,6 @@
 /// Local extension for Germany: daily MRR net of VAT per plan (kpi_de_mrr_net_of_vat). Its market key lets row-level security apply.
 table 'DE MRR Net of VAT'
+	lineageTag: d8a66fe5-a3de-4228-9bcf-6db646efc315
 
 	/// German MRR in EUR net of VAT at the standard rate, on the last day of the period.
 	measure 'DE MRR Net of VAT (EUR)' =
@@ -12,36 +13,55 @@ table 'DE MRR Net of VAT'
 			    )
 		formatString: \€#,0
 		displayFolder: Local Views\DE
+		lineageTag: 81e651ad-7a48-4cab-9f15-54d99b14cbe2
 
 	/// Day.
 	column date_day
 		dataType: dateTime
 		isHidden
 		formatString: yyyy-mm-dd
+		isAvailableInMdx: false
+		lineageTag: 57603557-74ec-44cc-9561-17276ed1a3ba
 		summarizeBy: none
 		sourceColumn: DATE_DAY
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation SummarizationSetBy = User
 
 	/// Plan key.
 	column plan_id
 		dataType: string
 		isHidden
+		isAvailableInMdx: false
+		lineageTag: 8b2c0c44-83fe-40d5-8211-1ece7c651ce7
 		summarizeBy: none
 		sourceColumn: PLAN_ID
+
+		annotation SummarizationSetBy = User
 
 	/// Market key (always DE).
 	column market_code
 		dataType: string
 		isHidden
+		isAvailableInMdx: false
+		lineageTag: 145f976d-f23f-4c2d-82e5-847ec5043ed0
 		summarizeBy: none
 		sourceColumn: MARKET_CODE
+
+		annotation SummarizationSetBy = User
 
 	/// MRR net of VAT, in EUR.
 	column mrr_net_of_vat
 		dataType: decimal
 		isHidden
 		formatString: #,0.00
+		isAvailableInMdx: false
+		lineageTag: 5f1f2310-f609-4c1c-af7b-d87e1c81b350
 		summarizeBy: none
 		sourceColumn: MRR_NET_OF_VAT
+
+		annotation SummarizationSetBy = User
 
 	partition 'DE MRR Net of VAT' = m
 		mode: import

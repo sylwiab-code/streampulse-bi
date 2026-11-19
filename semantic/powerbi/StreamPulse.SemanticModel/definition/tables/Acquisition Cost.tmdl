@@ -1,68 +1,96 @@
 /// Paid-channel spend and new paying customers per month, market, and channel (kpi_cac_ltv_monthly). Organic and referral channels are not included.
 table 'Acquisition Cost'
+	lineageTag: 2382bd4d-efd5-4b33-ac1b-eb16003d7e0e
 
 	/// Paid-channel campaign spend in EUR.
 	measure 'Marketing Spend (EUR)' = SUM ( 'Acquisition Cost'[spend_eur] )
 		formatString: \€#,0
 		displayFolder: Acquisition
+		lineageTag: 08946b9c-39d8-48a7-bdec-bcf0b95cc077
 
 	/// Customers acquired through a paid channel with their first payment in the period.
 	measure 'New Paying Customers' = SUM ( 'Acquisition Cost'[new_paying_customers] )
 		formatString: #,0
 		displayFolder: Acquisition
+		lineageTag: 90677521-f90a-402c-ac18-5018d1dd9c55
 
 	/// Customer acquisition cost in EUR: paid-channel spend / new paying customers from those channels.
 	measure 'CAC (EUR)' = DIVIDE ( SUM ( 'Acquisition Cost'[spend_eur] ), SUM ( 'Acquisition Cost'[new_paying_customers] ) )
 		formatString: \€#,0.00
 		displayFolder: Acquisition
+		lineageTag: 7bf5c02d-c29f-4415-93bc-bb37005db15d
 
 	/// Customer lifetime value in EUR: market ARPU / monthly churn rate (revenue-based, no margin data). Not affected by the channel filter.
 	measure 'LTV (EUR)' = DIVIDE ( [ARPU (EUR)], [Monthly Churn Rate] )
 		formatString: \€#,0.00
 		displayFolder: Acquisition
+		lineageTag: 92e0548f-de8a-4260-a824-28d34c49efa2
 
 	/// LTV / CAC.
 	measure 'LTV to CAC' = DIVIDE ( [LTV (EUR)], [CAC (EUR)] )
 		formatString: 0.00
 		displayFolder: Acquisition
+		lineageTag: afae840c-d5c2-458e-b633-eedac04d7fe4
 
 	/// Month (first day).
 	column calendar_month
 		dataType: dateTime
 		isHidden
 		formatString: yyyy-mm-dd
+		isAvailableInMdx: false
+		lineageTag: 36efb2fc-e95f-4df2-aaa1-0df83e6d1148
 		summarizeBy: none
 		sourceColumn: CALENDAR_MONTH
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation SummarizationSetBy = User
 
 	/// Market key.
 	column market_code
 		dataType: string
 		isHidden
+		isAvailableInMdx: false
+		lineageTag: 968b2567-ef7e-4b1b-9494-5fb176b2487b
 		summarizeBy: none
 		sourceColumn: MARKET_CODE
+
+		annotation SummarizationSetBy = User
 
 	/// Paid acquisition channel key.
 	column acquisition_channel
 		dataType: string
 		isHidden
+		isAvailableInMdx: false
+		lineageTag: 86c9cdbd-5a02-4c2a-892a-3061b41af4f7
 		summarizeBy: none
 		sourceColumn: ACQUISITION_CHANNEL
+
+		annotation SummarizationSetBy = User
 
 	/// Spend in EUR.
 	column spend_eur
 		dataType: decimal
 		isHidden
 		formatString: #,0.00
+		isAvailableInMdx: false
+		lineageTag: 7fbc15ea-adb0-4be5-bd93-f9064384eac2
 		summarizeBy: none
 		sourceColumn: SPEND_EUR
+
+		annotation SummarizationSetBy = User
 
 	/// Customers from this channel with their first payment in the month.
 	column new_paying_customers
 		dataType: int64
 		isHidden
 		formatString: #,0
+		isAvailableInMdx: false
+		lineageTag: 580c458c-e539-44a5-863d-f06705dcc18c
 		summarizeBy: none
 		sourceColumn: NEW_PAYING_CUSTOMERS
+
+		annotation SummarizationSetBy = User
 
 	partition 'Acquisition Cost' = m
 		mode: import

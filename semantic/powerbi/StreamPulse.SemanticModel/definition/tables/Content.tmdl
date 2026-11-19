@@ -1,5 +1,6 @@
 /// Content catalog, one row per title (dim_content). The catalog is global; viewing data is filtered by market.
 table Content
+	lineageTag: 552dc694-60ee-46a0-8a8e-95da0735739c
 
 	/// Title key.
 	column title_id
@@ -7,47 +8,71 @@ table Content
 		isHidden
 		isKey
 		formatString: 0
+		isAvailableInMdx: false
+		lineageTag: 097d0aa9-01f5-4065-a3f6-9edd8233d177
 		summarizeBy: none
 		sourceColumn: TITLE_ID
+
+		annotation SummarizationSetBy = User
 
 	/// Title name.
 	column Title
 		dataType: string
+		lineageTag: 44142f93-7bbe-480f-91ee-5594205df589
 		summarizeBy: none
 		sourceColumn: TITLE_NAME
+
+		annotation SummarizationSetBy = User
 
 	/// Genre.
 	column Genre
 		dataType: string
+		lineageTag: d63ffc22-0469-4586-a63b-fba5d4bcbe78
 		summarizeBy: none
 		sourceColumn: GENRE_NAME
+
+		annotation SummarizationSetBy = User
 
 	/// movie or series.
 	column 'Content Type'
 		dataType: string
+		lineageTag: dca601b9-c872-4aac-b4f5-ab4974c91bd7
 		summarizeBy: none
 		sourceColumn: CONTENT_TYPE
+
+		annotation SummarizationSetBy = User
 
 	/// Runtime in minutes (episode runtime for series).
 	column 'Runtime Minutes'
 		dataType: int64
 		formatString: #,0
+		lineageTag: da93adfc-aefb-4e9b-a27e-4c0fe29e1054
 		summarizeBy: none
 		sourceColumn: RUNTIME_MINUTES
+
+		annotation SummarizationSetBy = User
 
 	/// Release year.
 	column 'Release Year'
 		dataType: int64
 		formatString: 0
+		lineageTag: f3258252-f1d8-41e3-926a-3b7b6cf86655
 		summarizeBy: none
 		sourceColumn: RELEASE_YEAR
+
+		annotation SummarizationSetBy = User
 
 	/// Day the title became available.
 	column 'Added Date'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
+		lineageTag: e4aa4684-c35c-4c91-a56a-40c91f5393ea
 		summarizeBy: none
 		sourceColumn: ADDED_DATE
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation SummarizationSetBy = User
 
 	partition Content = m
 		mode: import

@@ -1,5 +1,6 @@
 /// Time intelligence for any measure: pick a calculation in visuals or slicers. Snapshot measures (subscribers, MRR) return the value at the end of the shifted period.
 table 'Time Intelligence'
+	lineageTag: 34a1ac81-17c0-44bf-b5bb-65276c4a4568
 
 	calculationGroup
 		precedence: 10
@@ -38,6 +39,7 @@ table 'Time Intelligence'
 	/// Time calculation applied to the measures in the visual.
 	column 'Time Calculation'
 		dataType: string
+		lineageTag: 3441071f-7bf5-4d2a-8d30-9f95b0fc8928
 		summarizeBy: none
 		sourceColumn: Name
 		sortByColumn: Ordinal
@@ -47,6 +49,7 @@ table 'Time Intelligence'
 		dataType: int64
 		isHidden
 		formatString: 0
+		lineageTag: f2a9985c-d39e-4cd6-bc4a-49ce94b4dcf9
 		summarizeBy: none
 		sourceColumn: Ordinal
 

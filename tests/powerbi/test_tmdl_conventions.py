@@ -192,6 +192,23 @@ def test_measure_names_are_unique_and_differ_from_column_names(tables):
     assert sorted(set(measures) & columns) == []
 
 
+def test_columns_are_never_summarized_implicitly(tables):
+    # Implicit measures are off (discourageImplicitMeasures). Power BI Desktop resets
+    # summarizeBy to sum for numeric columns unless SummarizationSetBy is User.
+    wrong = [
+        f"{t.name}[{c.name}]"
+        for t in tables.values()
+        for c in t.items
+        if c.kind == "column"
+        and t.name != "Time Intelligence"
+        and not (
+            "summarizeBy: none" in c.properties
+            and "annotation SummarizationSetBy = User" in c.properties
+        )
+    ]
+    assert wrong == []
+
+
 def test_measures_have_a_format_string(tables):
     missing = [
         f"{t.name}[{m.name}]"

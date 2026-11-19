@@ -8,7 +8,7 @@ repos:
         args: [--markdown-linebreak-ext=md]
       - id: end-of-file-fixer
         # Power BI Desktop owns the formatting of PBIP files (TMDL ends with a blank line).
-        exclude: ^semantic/powerbi/StreamPulse\.(SemanticModel|Report)/
+        exclude: ^semantic/powerbi/StreamPulse\.(SemanticModel/|Report/|pbip$)
       - id: check-toml
       - id: check-merge-conflict
       - id: check-case-conflict

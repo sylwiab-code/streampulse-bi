@@ -1,40 +1,57 @@
 /// Subscription plans: tier and billing period (dim_plan).
 table Plan
+	lineageTag: f5976ee2-ecfb-4e06-b846-6ce03f61d128
 
 	/// Plan key, for example standard_monthly.
 	column plan_id
 		dataType: string
 		isHidden
 		isKey
+		isAvailableInMdx: false
+		lineageTag: 4cb0ab01-bdc1-44bb-a887-2aadd6d81b5a
 		summarizeBy: none
 		sourceColumn: PLAN_ID
+
+		annotation SummarizationSetBy = User
 
 	/// Plan display name.
 	column Plan
 		dataType: string
+		lineageTag: 624f5350-6fb7-4825-8278-92a4c2ccc60c
 		summarizeBy: none
 		sourceColumn: PLAN_NAME
+
+		annotation SummarizationSetBy = User
 
 	/// Tier: basic, standard, or premium.
 	column Tier
 		dataType: string
+		lineageTag: c266e541-152d-4cb8-ad72-1bd2607d52a6
 		summarizeBy: none
 		sourceColumn: TIER_NAME
 		sortByColumn: tier_rank
+
+		annotation SummarizationSetBy = User
 
 	/// Tier order (1 = basic, 3 = premium).
 	column tier_rank
 		dataType: int64
 		isHidden
 		formatString: 0
+		lineageTag: 867a49e8-755f-439d-a140-c06f4099d7bb
 		summarizeBy: none
 		sourceColumn: TIER_RANK
+
+		annotation SummarizationSetBy = User
 
 	/// Billing period: monthly or annual.
 	column 'Billing Period'
 		dataType: string
+		lineageTag: b76846e2-3e40-4591-b7e1-3dec76eaddba
 		summarizeBy: none
 		sourceColumn: BILLING_PERIOD
+
+		annotation SummarizationSetBy = User
 
 	partition Plan = m
 		mode: import

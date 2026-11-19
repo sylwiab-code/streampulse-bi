@@ -1,8 +1,10 @@
 /// Field parameter: lets report users switch the KPI shown in a visual.
 table 'KPI Selector'
+	lineageTag: 025f655b-41fd-4a1b-8b77-f4bc49d6a5a8
 
 	/// KPI shown in the visual.
 	column KPI
+		lineageTag: e22c2cc7-5592-4613-b556-a63d06306d51
 		summarizeBy: none
 		sourceColumn: [Value1]
 		sortByColumn: 'KPI Order'
@@ -10,22 +12,34 @@ table 'KPI Selector'
 		relatedColumnDetails
 			groupByColumn: 'KPI Fields'
 
+		annotation SummarizationSetBy = User
+
 	/// Measure behind each KPI (field parameter metadata).
 	column 'KPI Fields'
 		isHidden
+		lineageTag: f7e2acbc-95f9-4b83-ad8f-587a2b6b5fb3
 		summarizeBy: none
 		sourceColumn: [Value2]
 
-		extendedProperty ParameterMetadata = {"version":3,"kind":2}
+		extendedProperty ParameterMetadata =
+				{
+				  "version": 3,
+				  "kind": 2
+				}
 
-		annotation BestPracticeAnalyzer_IgnoreRules = {"RuleIDs":["UNNECESSARY_COLUMNS"]}
+		annotation BestPracticeAnalyzer_IgnoreRules = {"RuleIDs":["UNNECESSARY_COLUMNS","ISAVAILABLEINMDX_FALSE_NONATTRIBUTE_COLUMNS"]}
+
+		annotation SummarizationSetBy = User
 
 	/// Order of the KPIs.
 	column 'KPI Order'
 		isHidden
 		formatString: 0
+		lineageTag: 0feebb3f-7c96-4473-a2ac-50e369612503
 		summarizeBy: none
 		sourceColumn: [Value3]
+
+		annotation SummarizationSetBy = User
 
 	partition 'KPI Selector' = calculated
 		mode: import

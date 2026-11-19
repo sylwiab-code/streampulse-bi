@@ -18,3 +18,5 @@ role Market
 
 	tablePermission 'Security Market Access' = 'Security Market Access'[User Principal Name] = USERPRINCIPALNAME ()
 
+	annotation PBI_Id = e1890a67e304457cbfd7fa22570f576e
+

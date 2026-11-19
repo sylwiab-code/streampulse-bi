@@ -1,5 +1,6 @@
 /// Quarterly campaigns per market and paid channel (dim_campaign). Not related to Market or Channel, to keep one filter path to each fact; row-level security filters it by its market.
 table Campaign
+	lineageTag: 0fa71100-c18b-4f4f-b969-f33c609286fb
 
 	/// Campaign key.
 	column campaign_id
@@ -7,35 +8,55 @@ table Campaign
 		isHidden
 		isKey
 		formatString: 0
+		isAvailableInMdx: false
+		lineageTag: cd061daa-b09a-4a17-a7a1-5628d5c17936
 		summarizeBy: none
 		sourceColumn: CAMPAIGN_ID
+
+		annotation SummarizationSetBy = User
 
 	/// Campaign name.
 	column Campaign
 		dataType: string
+		lineageTag: 70a1b520-28da-42bb-a7ed-b67cb4f4135f
 		summarizeBy: none
 		sourceColumn: CAMPAIGN_NAME
+
+		annotation SummarizationSetBy = User
 
 	/// Market of the campaign (used by row-level security).
 	column market_code
 		dataType: string
 		isHidden
+		isAvailableInMdx: false
 		summarizeBy: none
 		sourceColumn: MARKET_CODE
+
+		annotation SummarizationSetBy = User
 
 	/// First day of the campaign.
 	column 'Start Date'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
+		lineageTag: 93393680-b3a9-4b82-b32f-f165b33db22b
 		summarizeBy: none
 		sourceColumn: START_DATE
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation SummarizationSetBy = User
 
 	/// Last day of the campaign.
 	column 'End Date'
 		dataType: dateTime
 		formatString: yyyy-mm-dd
+		lineageTag: c0003e49-c98a-4a4c-a086-d4ce614f485c
 		summarizeBy: none
 		sourceColumn: END_DATE
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation SummarizationSetBy = User
 
 	partition Campaign = m
 		mode: import
