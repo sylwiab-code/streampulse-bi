@@ -24,6 +24,17 @@ create user if not exists svc_transformer_${env}
 grant role transformer_${env} to user svc_transformer_${env};
 -- rollback drop user if exists svc_transformer_${env};
 
+-- changeset streampulse:user-powerbi
+-- comment: The Power BI semantic model refreshes as this user (ADR-011).
+create user if not exists svc_powerbi_${env}
+    type = service
+    default_role = reporter_${env}
+    default_warehouse = wh_report_${env}
+    default_secondary_roles = ()
+    comment = 'Power BI semantic model refresh (${env})';
+grant role reporter_${env} to user svc_powerbi_${env};
+-- rollback drop user if exists svc_powerbi_${env};
+
 -- changeset streampulse:deployer-functional-roles context:dev
 -- comment: Locally the DEV deployer user runs the loader and tests in each functional role.
 grant role loader_${env} to user svc_deployer_${env};
