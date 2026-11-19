@@ -1,0 +1,30 @@
+/// Row-level security mapping: the markets each user may see (seed security_market_access). Hidden; used only by the Market role.
+table 'Security Market Access'
+	isHidden
+
+	/// User principal name (sign-in name), lowercase.
+	column 'User Principal Name'
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: USER_PRINCIPAL_NAME
+
+	/// Market the user may see.
+	column 'Market Code'
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: MARKET_CODE
+
+	partition 'Security Market Access' = m
+		mode: import
+		source =
+				let
+				    Source = StreamPulse{[Name = "MARTS", Kind = "Schema"]}[Data]{[Name = "SECURITY_MARKET_ACCESS", Kind = "Table"]}[Data],
+				    Selected = Table.SelectColumns(Source, {"USER_PRINCIPAL_NAME", "MARKET_CODE"}),
+				    Typed = Table.TransformColumnTypes(Selected, {{"USER_PRINCIPAL_NAME", type text}, {"MARKET_CODE", type text}})
+				in
+				    Typed
+
+	annotation BestPracticeAnalyzer_IgnoreRules = {"RuleIDs":["ENSURE_TABLES_HAVE_RELATIONSHIPS"]}
+

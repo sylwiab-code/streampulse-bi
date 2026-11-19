@@ -7,6 +7,8 @@ repos:
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
       - id: end-of-file-fixer
+        # Power BI Desktop owns the formatting of PBIP files (TMDL ends with a blank line).
+        exclude: ^semantic/powerbi/StreamPulse\.(SemanticModel|Report)/
       - id: check-toml
       - id: check-merge-conflict
       - id: check-case-conflict
@@ -52,6 +54,16 @@ repos:
         entry: gitleaks git --redact --verbose
         stages: [manual]
         always_run: true
+
+  - repo: local
+    hooks:
+      # Keeps the Snowflake account host out of Git (semantic/powerbi/connection.py).
+      - id: powerbi-connection-placeholder
+        name: Power BI connection placeholder
+        entry: python semantic/powerbi/connection.py reset
+        language: python
+        files: ^semantic/powerbi/StreamPulse\.SemanticModel/definition/expressions\.tmdl$
+        pass_filenames: false
 
   - repo: https://github.com/rhysd/actionlint
     rev: 914e7df21a07ef503a81201c76d2b11c789d3fca  # frozen: v1.7.12

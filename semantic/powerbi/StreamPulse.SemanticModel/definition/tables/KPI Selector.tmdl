@@ -1,0 +1,43 @@
+/// Field parameter: lets report users switch the KPI shown in a visual.
+table 'KPI Selector'
+
+	/// KPI shown in the visual.
+	column KPI
+		summarizeBy: none
+		sourceColumn: [Value1]
+		sortByColumn: 'KPI Order'
+
+		relatedColumnDetails
+			groupByColumn: 'KPI Fields'
+
+	/// Measure behind each KPI (field parameter metadata).
+	column 'KPI Fields'
+		isHidden
+		summarizeBy: none
+		sourceColumn: [Value2]
+
+		extendedProperty ParameterMetadata = {"version":3,"kind":2}
+
+		annotation BestPracticeAnalyzer_IgnoreRules = {"RuleIDs":["UNNECESSARY_COLUMNS"]}
+
+	/// Order of the KPIs.
+	column 'KPI Order'
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: [Value3]
+
+	partition 'KPI Selector' = calculated
+		mode: import
+		source =
+				{
+				    ("Active Subscribers", NAMEOF ( 'Subscribers Daily'[Active Subscribers] ), 0),
+				    ("MRR (EUR)", NAMEOF ( 'Subscribers Daily'[MRR (EUR)] ), 1),
+				    ("ARPU (EUR)", NAMEOF ( 'Subscribers Daily'[ARPU (EUR)] ), 2),
+				    ("Monthly Churn Rate", NAMEOF ( Churn[Monthly Churn Rate] ), 3),
+				    ("Trial Conversion Rate", NAMEOF ( 'Trial Conversion'[Trial Conversion Rate] ), 4),
+				    ("Watch Hours", NAMEOF ( 'Viewing Sessions'[Watch Hours] ), 5)
+				}
+
+	annotation BestPracticeAnalyzer_IgnoreRules = {"RuleIDs":["ENSURE_TABLES_HAVE_RELATIONSHIPS","REDUCE_USAGE_OF_CALCULATED_TABLES","DAX_MEASURES_UNQUALIFIED"]}
+

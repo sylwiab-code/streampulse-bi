@@ -1,0 +1,49 @@
+/// Quarterly campaigns per market and paid channel (dim_campaign). Not related to Market or Channel, to keep one filter path to each fact; row-level security filters it by its market.
+table Campaign
+
+	/// Campaign key.
+	column campaign_id
+		dataType: int64
+		isHidden
+		isKey
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: CAMPAIGN_ID
+
+	/// Campaign name.
+	column Campaign
+		dataType: string
+		summarizeBy: none
+		sourceColumn: CAMPAIGN_NAME
+
+	/// Market of the campaign (used by row-level security).
+	column market_code
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: MARKET_CODE
+
+	/// First day of the campaign.
+	column 'Start Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: START_DATE
+
+	/// Last day of the campaign.
+	column 'End Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: END_DATE
+
+	partition Campaign = m
+		mode: import
+		source =
+				let
+				    Source = StreamPulse{[Name = "MARTS", Kind = "Schema"]}[Data]{[Name = "DIM_CAMPAIGN", Kind = "Table"]}[Data],
+				    Selected = Table.SelectColumns(Source, {"CAMPAIGN_ID", "CAMPAIGN_NAME", "MARKET_CODE", "START_DATE", "END_DATE"}),
+				    Typed = Table.TransformColumnTypes(Selected, {{"CAMPAIGN_ID", Int64.Type}, {"CAMPAIGN_NAME", type text}, {"MARKET_CODE", type text}, {"START_DATE", type date}, {"END_DATE", type date}})
+				in
+				    Typed
+

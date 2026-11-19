@@ -1,0 +1,73 @@
+/// Customers without PII (dim_customer): market, acquisition, cohort, and the repeat-trial flag. Facts at customer grain reach Market through this table.
+table Customer
+
+	/// Customer key.
+	column customer_id
+		dataType: int64
+		isHidden
+		isKey
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: CUSTOMER_ID
+
+	/// Market key.
+	column market_code
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: MARKET_CODE
+
+	/// Acquisition channel key.
+	column acquisition_channel
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: ACQUISITION_CHANNEL
+
+	/// Acquisition campaign key (paid channels only).
+	column campaign_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: CAMPAIGN_ID
+
+	/// Sign-up day.
+	column 'Signup Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: SIGNUP_DATE
+
+	/// Day of the first successful payment; blank if never paid.
+	column 'First Paid Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: FIRST_PAID_DATE
+
+	/// Month of the first successful payment (retention cohort).
+	column 'Cohort Month'
+		dataType: dateTime
+		formatString: mmm yyyy
+		summarizeBy: none
+		sourceColumn: COHORT_MONTH
+
+	/// An earlier customer with the same normalized email had an expired trial before this sign-up.
+	column 'Is Repeat Trial'
+		dataType: boolean
+		summarizeBy: none
+		sourceColumn: IS_REPEAT_TRIAL
+
+	partition Customer = m
+		mode: import
+		source =
+				let
+				    Source = StreamPulse{[Name = "MARTS", Kind = "Schema"]}[Data]{[Name = "DIM_CUSTOMER", Kind = "Table"]}[Data],
+				    Selected = Table.SelectColumns(Source, {"CUSTOMER_ID", "MARKET_CODE", "ACQUISITION_CHANNEL", "CAMPAIGN_ID", "SIGNUP_DATE", "FIRST_PAID_DATE", "COHORT_MONTH", "IS_REPEAT_TRIAL"}),
+				    Typed = Table.TransformColumnTypes(Selected, {{"CUSTOMER_ID", Int64.Type}, {"MARKET_CODE", type text}, {"ACQUISITION_CHANNEL", type text}, {"CAMPAIGN_ID", Int64.Type}, {"SIGNUP_DATE", type date}, {"FIRST_PAID_DATE", type date}, {"COHORT_MONTH", type date}, {"IS_REPEAT_TRIAL", type logical}})
+				in
+				    Typed
+
+	annotation BestPracticeAnalyzer_IgnoreRules = {"RuleIDs":["SNOWFLAKE_SCHEMA_ARCHITECTURE"]}
+

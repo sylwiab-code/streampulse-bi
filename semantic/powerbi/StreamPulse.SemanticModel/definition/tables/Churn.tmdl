@@ -1,0 +1,80 @@
+/// Monthly subscriber churn per market, voluntary and involuntary (kpi_churn_monthly).
+table Churn
+
+	/// Subscriptions that churned in the period (voluntary and involuntary). Expired trials are not churn.
+	measure 'Churned Subscribers' = SUM ( Churn[churned_subscribers] )
+		formatString: #,0
+		displayFolder: Churn
+
+	/// Voluntary churn: the subscriber cancelled; churn date is the end of the paid period.
+	measure 'Voluntary Churn' = SUM ( Churn[churned_voluntary] )
+		formatString: #,0
+		displayFolder: Churn
+
+	/// Involuntary churn: payment retries failed; churn date is the last failed retry.
+	measure 'Involuntary Churn' = SUM ( Churn[churned_involuntary] )
+		formatString: #,0
+		displayFolder: Churn
+
+	/// Churned subscribers / paid subscribers active on the first day of each month. For one month this is the KPI definition; over several months it is the average monthly rate weighted by the starting base. Not meaningful in the launch month (November 2024).
+	measure 'Monthly Churn Rate' = DIVIDE ( SUM ( Churn[churned_subscribers] ), SUM ( Churn[active_at_month_start] ) )
+		formatString: #,0.0%;-#,0.0%;#,0.0%
+		displayFolder: Churn
+
+	/// Month (first day).
+	column calendar_month
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: CALENDAR_MONTH
+
+	/// Market key.
+	column market_code
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: MARKET_CODE
+
+	/// Paid subscriptions active on the first day of the month.
+	column active_at_month_start
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: ACTIVE_AT_MONTH_START
+
+	/// Voluntary churn in the month.
+	column churned_voluntary
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: CHURNED_VOLUNTARY
+
+	/// Involuntary churn in the month.
+	column churned_involuntary
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: CHURNED_INVOLUNTARY
+
+	/// All churn in the month.
+	column churned_subscribers
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: CHURNED_SUBSCRIBERS
+
+	partition Churn = m
+		mode: import
+		source =
+				let
+				    Source = StreamPulse{[Name = "KPI", Kind = "Schema"]}[Data]{[Name = "KPI_CHURN_MONTHLY", Kind = "Table"]}[Data],
+				    Selected = Table.SelectColumns(Source, {"CALENDAR_MONTH", "MARKET_CODE", "ACTIVE_AT_MONTH_START", "CHURNED_VOLUNTARY", "CHURNED_INVOLUNTARY", "CHURNED_SUBSCRIBERS"}),
+				    Typed = Table.TransformColumnTypes(Selected, {{"CALENDAR_MONTH", type date}, {"MARKET_CODE", type text}, {"ACTIVE_AT_MONTH_START", Int64.Type}, {"CHURNED_VOLUNTARY", Int64.Type}, {"CHURNED_INVOLUNTARY", Int64.Type}, {"CHURNED_SUBSCRIBERS", Int64.Type}})
+				in
+				    Typed
+

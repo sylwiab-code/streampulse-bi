@@ -1,0 +1,136 @@
+/// Viewing sessions (fct_viewing_sessions), loaded with incremental refresh: two years kept, the last 7 days refreshed to pick up late sessions. Market comes through Customer.
+table 'Viewing Sessions'
+
+	refreshPolicy
+		policyType: basic
+		rollingWindowGranularity: year
+		rollingWindowPeriods: 2
+		incrementalGranularity: day
+		incrementalPeriods: 7
+		sourceExpression =
+			let
+			    Source = StreamPulse{[Name = "MARTS", Kind = "Schema"]}[Data]{[Name = "FCT_VIEWING_SESSIONS", Kind = "Table"]}[Data],
+			    InRange = Table.SelectRows(Source, each [STARTED_AT] >= RangeStart and [STARTED_AT] < RangeEnd),
+			    Typed = Table.TransformColumnTypes(InRange, {{"SESSION_ID", Int64.Type}, {"CUSTOMER_ID", Int64.Type}, {"TITLE_ID", Int64.Type}, {"STARTED_AT", type datetime}, {"STARTED_DATE", type date}, {"WATCH_MINUTES", Int64.Type}, {"WATCH_HOURS", type number}, {"COMPLETION_RATE", type number}, {"DEVICE_TYPE", type text}, {"APP_VERSION", type text}, {"LOADED_AT", type datetimezone}})
+			in
+			    Typed
+
+	/// Viewing sessions in the period.
+	measure Sessions = COUNTROWS ( 'Viewing Sessions' )
+		formatString: #,0
+		displayFolder: Engagement
+
+	/// Hours watched: watch minutes / 60.
+	measure 'Watch Hours' = DIVIDE ( SUM ( 'Viewing Sessions'[watch_minutes] ), 60 )
+		formatString: #,0
+		displayFolder: Engagement
+
+	/// Distinct customers with a session (reach, for a title).
+	measure Viewers = DISTINCTCOUNT ( 'Viewing Sessions'[customer_id] )
+		formatString: #,0
+		displayFolder: Engagement
+
+	/// Average over sessions of minutes watched / runtime, capped at 100%.
+	measure 'Average Completion Rate' = AVERAGE ( 'Viewing Sessions'[completion_rate] )
+		formatString: #,0.0%;-#,0.0%;#,0.0%
+		displayFolder: Engagement
+
+	/// Watch hours / active subscribers at the end of the period. Subscribers are not split by title or genre, so for a genre this is the genre's hours per subscriber.
+	measure 'Watch Hours per Subscriber' = DIVIDE ( [Watch Hours], [Active Subscribers] )
+		formatString: #,0.0
+		displayFolder: Engagement
+
+	/// Session key.
+	column session_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: SESSION_ID
+
+	/// Customer key.
+	column customer_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: CUSTOMER_ID
+
+	/// Title key.
+	column title_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: TITLE_ID
+
+	/// Start time.
+	column started_at
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd hh:nn:ss
+		summarizeBy: none
+		sourceColumn: STARTED_AT
+
+	/// Start day.
+	column started_date
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: STARTED_DATE
+
+	/// Minutes watched.
+	column watch_minutes
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: WATCH_MINUTES
+
+	/// Hours watched.
+	column watch_hours
+		dataType: double
+		isHidden
+		formatString: #,0.00
+		summarizeBy: none
+		sourceColumn: WATCH_HOURS
+
+	/// Minutes watched / runtime, capped at 1.
+	column completion_rate
+		dataType: double
+		isHidden
+		formatString: 0.0%
+		summarizeBy: none
+		sourceColumn: COMPLETION_RATE
+
+	/// tv, mobile, web, or tablet.
+	column 'Device Type'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: DEVICE_TYPE
+
+	/// App version; blank before the 2026-01-01 schema change.
+	column 'App Version'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: APP_VERSION
+
+	/// Load time of the source row.
+	column loaded_at
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd hh:nn:ss
+		summarizeBy: none
+		sourceColumn: LOADED_AT
+
+	partition 'Viewing Sessions' = m
+		mode: import
+		source =
+				let
+				    Source = StreamPulse{[Name = "MARTS", Kind = "Schema"]}[Data]{[Name = "FCT_VIEWING_SESSIONS", Kind = "Table"]}[Data],
+				    InRange = Table.SelectRows(Source, each [STARTED_AT] >= RangeStart and [STARTED_AT] < RangeEnd),
+				    Typed = Table.TransformColumnTypes(InRange, {{"SESSION_ID", Int64.Type}, {"CUSTOMER_ID", Int64.Type}, {"TITLE_ID", Int64.Type}, {"STARTED_AT", type datetime}, {"STARTED_DATE", type date}, {"WATCH_MINUTES", Int64.Type}, {"WATCH_HOURS", type number}, {"COMPLETION_RATE", type number}, {"DEVICE_TYPE", type text}, {"APP_VERSION", type text}, {"LOADED_AT", type datetimezone}})
+				in
+				    Typed
+

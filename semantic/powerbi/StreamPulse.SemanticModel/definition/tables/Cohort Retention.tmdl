@@ -1,0 +1,70 @@
+/// Logo retention by first-payment cohort for months 0-24 (kpi_cohort_retention). Related to Date by the cohort month.
+table 'Cohort Retention'
+
+	/// Customers in the cohort (counted at month 0, so the value does not grow with the months shown).
+	measure 'Cohort Customers' =
+			CALCULATE (
+			    SUM ( 'Cohort Retention'[cohort_customers] ),
+			    'Cohort Retention'[Months Since First Payment] = 0
+			)
+		formatString: #,0
+		displayFolder: Retention
+
+	/// Cohort customers active (MRR > 0) at the end of month k after the cohort month.
+	measure 'Retained Customers' = SUM ( 'Cohort Retention'[retained_customers] )
+		formatString: #,0
+		displayFolder: Retention
+
+	/// Retained customers / cohort customers for each month k; over several k it is the average weighted by cohort size.
+	measure 'Retention Rate' = DIVIDE ( SUM ( 'Cohort Retention'[retained_customers] ), SUM ( 'Cohort Retention'[cohort_customers] ) )
+		formatString: #,0.0%;-#,0.0%;#,0.0%
+		displayFolder: Retention
+
+	/// First payment month (first day).
+	column cohort_month
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: COHORT_MONTH
+
+	/// Market key.
+	column market_code
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: MARKET_CODE
+
+	/// k: months after the cohort month (0-24).
+	column 'Months Since First Payment'
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: MONTHS_SINCE_FIRST_PAYMENT
+
+	/// Customers in the cohort.
+	column cohort_customers
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: COHORT_CUSTOMERS
+
+	/// Cohort customers active at the end of month k.
+	column retained_customers
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: RETAINED_CUSTOMERS
+
+	partition 'Cohort Retention' = m
+		mode: import
+		source =
+				let
+				    Source = StreamPulse{[Name = "KPI", Kind = "Schema"]}[Data]{[Name = "KPI_COHORT_RETENTION", Kind = "Table"]}[Data],
+				    Selected = Table.SelectColumns(Source, {"COHORT_MONTH", "MARKET_CODE", "MONTHS_SINCE_FIRST_PAYMENT", "COHORT_CUSTOMERS", "RETAINED_CUSTOMERS"}),
+				    Typed = Table.TransformColumnTypes(Selected, {{"COHORT_MONTH", type date}, {"MARKET_CODE", type text}, {"MONTHS_SINCE_FIRST_PAYMENT", Int64.Type}, {"COHORT_CUSTOMERS", Int64.Type}, {"RETAINED_CUSTOMERS", Int64.Type}})
+				in
+				    Typed
+

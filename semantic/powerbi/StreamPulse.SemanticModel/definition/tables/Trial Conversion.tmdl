@@ -1,0 +1,100 @@
+/// Trial-to-paid conversion by trial start month, market, channel, and campaign (kpi_trial_conversion_monthly).
+table 'Trial Conversion'
+
+	/// Trials started in the period (by trial start month).
+	measure 'Trials Started' = SUM ( 'Trial Conversion'[trials_started] )
+		formatString: #,0
+		displayFolder: Trials
+
+	/// Trials started in the period that converted to paid.
+	measure 'Trials Converted' = SUM ( 'Trial Conversion'[trials_converted] )
+		formatString: #,0
+		displayFolder: Trials
+
+	/// Trials started in the period that expired without conversion.
+	measure 'Trials Expired' = SUM ( 'Trial Conversion'[trials_expired] )
+		formatString: #,0
+		displayFolder: Trials
+
+	/// Trials started in the period that are still running.
+	measure 'Open Trials' = SUM ( 'Trial Conversion'[trials_open] )
+		formatString: #,0
+		displayFolder: Trials
+
+	/// Trials converted / trials started, by trial start month. Open trials lower the latest month's rate until they end.
+	measure 'Trial Conversion Rate' = DIVIDE ( SUM ( 'Trial Conversion'[trials_converted] ), SUM ( 'Trial Conversion'[trials_started] ) )
+		formatString: #,0.0%;-#,0.0%;#,0.0%
+		displayFolder: Trials
+
+	/// Month the trial started (first day).
+	column trial_start_month
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: TRIAL_START_MONTH
+
+	/// Market key.
+	column market_code
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: MARKET_CODE
+
+	/// Acquisition channel key.
+	column acquisition_channel
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: ACQUISITION_CHANNEL
+
+	/// Acquisition campaign key (paid channels only).
+	column campaign_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: CAMPAIGN_ID
+
+	/// Trials started.
+	column trials_started
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: TRIALS_STARTED
+
+	/// Trials converted to paid.
+	column trials_converted
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: TRIALS_CONVERTED
+
+	/// Trials expired without conversion.
+	column trials_expired
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: TRIALS_EXPIRED
+
+	/// Trials still running.
+	column trials_open
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: TRIALS_OPEN
+
+	partition 'Trial Conversion' = m
+		mode: import
+		source =
+				let
+				    Source = StreamPulse{[Name = "KPI", Kind = "Schema"]}[Data]{[Name = "KPI_TRIAL_CONVERSION_MONTHLY", Kind = "Table"]}[Data],
+				    Selected = Table.SelectColumns(Source, {"TRIAL_START_MONTH", "MARKET_CODE", "ACQUISITION_CHANNEL", "CAMPAIGN_ID", "TRIALS_STARTED", "TRIALS_CONVERTED", "TRIALS_EXPIRED", "TRIALS_OPEN"}),
+				    Typed = Table.TransformColumnTypes(Selected, {{"TRIAL_START_MONTH", type date}, {"MARKET_CODE", type text}, {"ACQUISITION_CHANNEL", type text}, {"CAMPAIGN_ID", Int64.Type}, {"TRIALS_STARTED", Int64.Type}, {"TRIALS_CONVERTED", Int64.Type}, {"TRIALS_EXPIRED", Int64.Type}, {"TRIALS_OPEN", Int64.Type}})
+				in
+				    Typed
+

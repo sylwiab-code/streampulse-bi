@@ -1,0 +1,230 @@
+cultureInfo pl-PL
+	translations
+		model Model
+			table Date
+				caption: Data
+				column Date
+					caption: Data
+				column Year
+					caption: Rok
+				column Quarter
+					caption: Kwartał
+				column Month
+					caption: Miesiąc
+				column 'Month Name'
+					caption: Nazwa miesiąca
+				column 'ISO Week'
+					caption: Tydzień ISO
+				column 'Day of Week'
+					caption: Dzień tygodnia
+				column 'Is Weekend'
+					caption: Weekend
+			table Market
+				caption: Rynek
+				column 'Market Code'
+					caption: Kod rynku
+				column Market
+					caption: Rynek
+				column 'Currency Code'
+					caption: Kod waluty
+				column Currency
+					caption: Waluta
+			table Plan
+				caption: Plan
+				column Plan
+					caption: Plan
+				column Tier
+					caption: Pakiet
+				column 'Billing Period'
+					caption: Okres rozliczeniowy
+			table Channel
+				caption: Kanał
+				column 'Acquisition Channel'
+					caption: Kanał pozyskania
+				column 'Is Paid Channel'
+					caption: Kanał płatny
+			table Campaign
+				caption: Kampania
+				column Campaign
+					caption: Kampania
+				column 'Start Date'
+					caption: Data rozpoczęcia
+				column 'End Date'
+					caption: Data zakończenia
+			table Content
+				caption: Treści
+				column Title
+					caption: Tytuł
+				column Genre
+					caption: Gatunek
+				column 'Content Type'
+					caption: Typ treści
+				column 'Runtime Minutes'
+					caption: Czas trwania (min)
+				column 'Release Year'
+					caption: Rok premiery
+				column 'Added Date'
+					caption: Data dodania
+			table Customer
+				caption: Klient
+				column 'Signup Date'
+					caption: Data rejestracji
+				column 'First Paid Date'
+					caption: Data pierwszej płatności
+				column 'Cohort Month'
+					caption: Miesiąc kohorty
+				column 'Is Repeat Trial'
+					caption: Powtórny okres próbny
+			table 'Subscribers Daily'
+				caption: Subskrybenci dziennie
+				measure 'Active Subscribers'
+					caption: Aktywni subskrybenci
+					displayFolder: Subskrybenci
+				measure Trialists
+					caption: Użytkownicy w okresie próbnym
+					displayFolder: Subskrybenci
+				measure 'MRR (EUR)'
+					caption: MRR (EUR)
+					displayFolder: Przychody
+				measure 'MRR (Local Currency)'
+					caption: MRR (waluta lokalna)
+					displayFolder: Przychody
+				measure 'ARR (EUR)'
+					caption: ARR (EUR)
+					displayFolder: Przychody
+				measure 'ARPU (EUR)'
+					caption: ARPU (EUR)
+					displayFolder: Przychody
+			table 'MRR Movements'
+				caption: Zmiany MRR
+				column 'Movement Type'
+					caption: Typ zmiany
+				measure 'MRR Change (EUR)'
+					caption: Zmiana MRR (EUR)
+					displayFolder: Zmiany MRR
+				measure 'MRR Change (Local Currency)'
+					caption: Zmiana MRR (waluta lokalna)
+					displayFolder: Zmiany MRR
+				measure 'MRR Movement Customers'
+					caption: Klienci ze zmianą MRR
+					displayFolder: Zmiany MRR
+			table Churn
+				caption: Rezygnacje
+				measure 'Churned Subscribers'
+					caption: Utraceni subskrybenci
+					displayFolder: Rezygnacje
+				measure 'Voluntary Churn'
+					caption: Rezygnacje dobrowolne
+					displayFolder: Rezygnacje
+				measure 'Involuntary Churn'
+					caption: Rezygnacje niedobrowolne
+					displayFolder: Rezygnacje
+				measure 'Monthly Churn Rate'
+					caption: Miesięczny wskaźnik rezygnacji
+					displayFolder: Rezygnacje
+			table 'Trial Conversion'
+				caption: Konwersja okresów próbnych
+				measure 'Trials Started'
+					caption: Rozpoczęte okresy próbne
+					displayFolder: Okresy próbne
+				measure 'Trials Converted'
+					caption: Skonwertowane okresy próbne
+					displayFolder: Okresy próbne
+				measure 'Trials Expired'
+					caption: Wygasłe okresy próbne
+					displayFolder: Okresy próbne
+				measure 'Open Trials'
+					caption: Trwające okresy próbne
+					displayFolder: Okresy próbne
+				measure 'Trial Conversion Rate'
+					caption: Wskaźnik konwersji okresów próbnych
+					displayFolder: Okresy próbne
+			table 'Cohort Retention'
+				caption: Retencja kohort
+				column 'Months Since First Payment'
+					caption: Miesiące od pierwszej płatności
+				measure 'Cohort Customers'
+					caption: Klienci w kohorcie
+					displayFolder: Retencja
+				measure 'Retained Customers'
+					caption: Utrzymani klienci
+					displayFolder: Retencja
+				measure 'Retention Rate'
+					caption: Wskaźnik retencji
+					displayFolder: Retencja
+			table 'Acquisition Cost'
+				caption: Koszt pozyskania
+				measure 'Marketing Spend (EUR)'
+					caption: Wydatki marketingowe (EUR)
+					displayFolder: Pozyskanie
+				measure 'New Paying Customers'
+					caption: Nowi płacący klienci
+					displayFolder: Pozyskanie
+				measure 'CAC (EUR)'
+					caption: CAC (EUR)
+					displayFolder: Pozyskanie
+				measure 'LTV (EUR)'
+					caption: LTV (EUR)
+					displayFolder: Pozyskanie
+				measure 'LTV to CAC'
+					caption: LTV do CAC
+					displayFolder: Pozyskanie
+			table Payments
+				caption: Płatności
+				column 'Attempt Number'
+					caption: Numer próby
+				column 'Payment Status'
+					caption: Status płatności
+				column 'Failure Reason'
+					caption: Przyczyna niepowodzenia
+				measure 'Payment Attempts'
+					caption: Próby płatności
+					displayFolder: Płatności
+				measure 'Failed Payment Attempts'
+					caption: Nieudane próby płatności
+					displayFolder: Płatności
+				measure 'Payment Failure Rate'
+					caption: Wskaźnik nieudanych płatności
+					displayFolder: Płatności
+				measure 'Collected Payments (EUR)'
+					caption: Pobrane płatności (EUR)
+					displayFolder: Płatności
+			table 'Viewing Sessions'
+				caption: Sesje oglądania
+				column 'Device Type'
+					caption: Typ urządzenia
+				column 'App Version'
+					caption: Wersja aplikacji
+				measure Sessions
+					caption: Sesje
+					displayFolder: Zaangażowanie
+				measure 'Watch Hours'
+					caption: Godziny oglądania
+					displayFolder: Zaangażowanie
+				measure Viewers
+					caption: Widzowie
+					displayFolder: Zaangażowanie
+				measure 'Average Completion Rate'
+					caption: Średni wskaźnik ukończenia
+					displayFolder: Zaangażowanie
+				measure 'Watch Hours per Subscriber'
+					caption: Godziny oglądania na subskrybenta
+					displayFolder: Zaangażowanie
+			table 'DE MRR Net of VAT'
+				caption: MRR DE netto bez VAT
+				measure 'DE MRR Net of VAT (EUR)'
+					caption: MRR DE netto bez VAT (EUR)
+					displayFolder: Widoki lokalne\DE
+			table 'Time Intelligence'
+				caption: Analiza czasowa
+				column 'Time Calculation'
+					caption: Obliczenie czasowe
+			table 'KPI Selector'
+				caption: Wybór KPI
+				column KPI
+					caption: KPI
+			table 'Dimension Selector'
+				caption: Wybór wymiaru
+				column Dimension
+					caption: Wymiar
+

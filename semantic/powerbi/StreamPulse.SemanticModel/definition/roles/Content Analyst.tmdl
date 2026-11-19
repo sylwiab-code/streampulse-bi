@@ -1,0 +1,32 @@
+/// Content analysts: all markets, without financial columns (object-level security). Measures that use them (MRR, ARR, ARPU, MRR changes, payment amounts, spend, CAC, LTV) are unavailable too. Do not combine with the Market role: row- and object-level security from different roles raise an error.
+role 'Content Analyst'
+	modelPermission: read
+
+	tablePermission 'Subscribers Daily'
+
+		columnPermission mrr_local = none
+
+		columnPermission mrr_eur = none
+
+		columnPermission arr_eur = none
+
+	tablePermission 'MRR Movements'
+
+		columnPermission mrr_change_local = none
+
+		columnPermission mrr_change_eur = none
+
+	tablePermission Payments
+
+		columnPermission amount_local = none
+
+		columnPermission amount_eur = none
+
+	tablePermission 'Acquisition Cost'
+
+		columnPermission spend_eur = none
+
+	tablePermission 'DE MRR Net of VAT'
+
+		columnPermission mrr_net_of_vat = none
+

@@ -1,0 +1,136 @@
+/// Payment attempts, up to three per billing period, in local currency and EUR (fct_payments).
+table Payments
+
+	/// Payment attempts in the period, including retries.
+	measure 'Payment Attempts' = COUNTROWS ( Payments )
+		formatString: #,0
+		displayFolder: Payments
+
+	/// Payment attempts that failed.
+	measure 'Failed Payment Attempts' = CALCULATE ( COUNTROWS ( Payments ), Payments[Payment Status] = "failed" )
+		formatString: #,0
+		displayFolder: Payments
+
+	/// Failed payment attempts / all payment attempts.
+	measure 'Payment Failure Rate' = DIVIDE ( [Failed Payment Attempts], [Payment Attempts] )
+		formatString: #,0.0%;-#,0.0%;#,0.0%
+		displayFolder: Payments
+
+	/// Successful payments in EUR at the day's exchange rate.
+	measure 'Collected Payments (EUR)' = CALCULATE ( SUM ( Payments[amount_eur] ), Payments[Payment Status] = "succeeded" )
+		formatString: \€#,0
+		displayFolder: Payments
+
+	/// Payment attempt key.
+	column payment_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: PAYMENT_ID
+
+	/// Subscription key.
+	column subscription_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: SUBSCRIPTION_ID
+
+	/// Customer key.
+	column customer_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: CUSTOMER_ID
+
+	/// Market key.
+	column market_code
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: MARKET_CODE
+
+	/// Plan key.
+	column plan_id
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: PLAN_ID
+
+	/// Start of the billed period.
+	column billing_period_start
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: BILLING_PERIOD_START
+
+	/// 1 = first attempt, 2-3 = retries.
+	column 'Attempt Number'
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: ATTEMPT_NUMBER
+
+	/// Attempt time.
+	column attempted_at
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd hh:nn:ss
+		summarizeBy: none
+		sourceColumn: ATTEMPTED_AT
+
+	/// Attempt day.
+	column attempted_date
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: ATTEMPTED_DATE
+
+	/// succeeded or failed.
+	column 'Payment Status'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: PAYMENT_STATUS
+
+	/// Reason for a failed attempt.
+	column 'Failure Reason'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: FAILURE_REASON
+
+	/// Local currency.
+	column currency_code
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: CURRENCY_CODE
+
+	/// Amount in local currency.
+	column amount_local
+		dataType: decimal
+		isHidden
+		formatString: #,0.00
+		summarizeBy: none
+		sourceColumn: AMOUNT_LOCAL
+
+	/// Amount in EUR at the day's rate.
+	column amount_eur
+		dataType: decimal
+		isHidden
+		formatString: #,0.00
+		summarizeBy: none
+		sourceColumn: AMOUNT_EUR
+
+	partition Payments = m
+		mode: import
+		source =
+				let
+				    Source = StreamPulse{[Name = "MARTS", Kind = "Schema"]}[Data]{[Name = "FCT_PAYMENTS", Kind = "Table"]}[Data],
+				    Typed = Table.TransformColumnTypes(Source, {{"PAYMENT_ID", Int64.Type}, {"SUBSCRIPTION_ID", Int64.Type}, {"CUSTOMER_ID", Int64.Type}, {"MARKET_CODE", type text}, {"PLAN_ID", type text}, {"BILLING_PERIOD_START", type date}, {"ATTEMPT_NUMBER", Int64.Type}, {"ATTEMPTED_AT", type datetime}, {"ATTEMPTED_DATE", type date}, {"PAYMENT_STATUS", type text}, {"FAILURE_REASON", type text}, {"CURRENCY_CODE", type text}, {"AMOUNT_LOCAL", Currency.Type}, {"AMOUNT_EUR", Currency.Type}})
+				in
+				    Typed
+

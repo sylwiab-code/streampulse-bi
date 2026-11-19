@@ -1,0 +1,48 @@
+/// Subscription plans: tier and billing period (dim_plan).
+table Plan
+
+	/// Plan key, for example standard_monthly.
+	column plan_id
+		dataType: string
+		isHidden
+		isKey
+		summarizeBy: none
+		sourceColumn: PLAN_ID
+
+	/// Plan display name.
+	column Plan
+		dataType: string
+		summarizeBy: none
+		sourceColumn: PLAN_NAME
+
+	/// Tier: basic, standard, or premium.
+	column Tier
+		dataType: string
+		summarizeBy: none
+		sourceColumn: TIER_NAME
+		sortByColumn: tier_rank
+
+	/// Tier order (1 = basic, 3 = premium).
+	column tier_rank
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: TIER_RANK
+
+	/// Billing period: monthly or annual.
+	column 'Billing Period'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: BILLING_PERIOD
+
+	partition Plan = m
+		mode: import
+		source =
+				let
+				    Source = StreamPulse{[Name = "MARTS", Kind = "Schema"]}[Data]{[Name = "DIM_PLAN", Kind = "Table"]}[Data],
+				    Selected = Table.SelectColumns(Source, {"PLAN_ID", "PLAN_NAME", "TIER_NAME", "TIER_RANK", "BILLING_PERIOD"}),
+				    Typed = Table.TransformColumnTypes(Selected, {{"PLAN_ID", type text}, {"PLAN_NAME", type text}, {"TIER_NAME", type text}, {"TIER_RANK", Int64.Type}, {"BILLING_PERIOD", type text}})
+				in
+				    Typed
+

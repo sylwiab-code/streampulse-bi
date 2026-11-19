@@ -1,0 +1,42 @@
+/// Field parameter: lets report users switch the breakdown of a visual. Measures from tables not related to the chosen dimension show their total.
+table 'Dimension Selector'
+
+	/// Dimension used to break down the visual.
+	column Dimension
+		summarizeBy: none
+		sourceColumn: [Value1]
+		sortByColumn: 'Dimension Order'
+
+		relatedColumnDetails
+			groupByColumn: 'Dimension Fields'
+
+	/// Column behind each dimension (field parameter metadata).
+	column 'Dimension Fields'
+		isHidden
+		summarizeBy: none
+		sourceColumn: [Value2]
+
+		extendedProperty ParameterMetadata = {"version":3,"kind":2}
+
+		annotation BestPracticeAnalyzer_IgnoreRules = {"RuleIDs":["UNNECESSARY_COLUMNS"]}
+
+	/// Order of the dimensions.
+	column 'Dimension Order'
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: [Value3]
+
+	partition 'Dimension Selector' = calculated
+		mode: import
+		source =
+				{
+				    ("Market", NAMEOF ( Market[Market] ), 0),
+				    ("Plan", NAMEOF ( Plan[Plan] ), 1),
+				    ("Tier", NAMEOF ( Plan[Tier] ), 2),
+				    ("Billing Period", NAMEOF ( Plan[Billing Period] ), 3),
+				    ("Acquisition Channel", NAMEOF ( Channel[Acquisition Channel] ), 4)
+				}
+
+	annotation BestPracticeAnalyzer_IgnoreRules = {"RuleIDs":["ENSURE_TABLES_HAVE_RELATIONSHIPS","REDUCE_USAGE_OF_CALCULATED_TABLES","DAX_MEASURES_UNQUALIFIED"]}
+

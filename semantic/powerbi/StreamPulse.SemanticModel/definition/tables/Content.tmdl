@@ -1,0 +1,61 @@
+/// Content catalog, one row per title (dim_content). The catalog is global; viewing data is filtered by market.
+table Content
+
+	/// Title key.
+	column title_id
+		dataType: int64
+		isHidden
+		isKey
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: TITLE_ID
+
+	/// Title name.
+	column Title
+		dataType: string
+		summarizeBy: none
+		sourceColumn: TITLE_NAME
+
+	/// Genre.
+	column Genre
+		dataType: string
+		summarizeBy: none
+		sourceColumn: GENRE_NAME
+
+	/// movie or series.
+	column 'Content Type'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: CONTENT_TYPE
+
+	/// Runtime in minutes (episode runtime for series).
+	column 'Runtime Minutes'
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: RUNTIME_MINUTES
+
+	/// Release year.
+	column 'Release Year'
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: RELEASE_YEAR
+
+	/// Day the title became available.
+	column 'Added Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: ADDED_DATE
+
+	partition Content = m
+		mode: import
+		source =
+				let
+				    Source = StreamPulse{[Name = "MARTS", Kind = "Schema"]}[Data]{[Name = "DIM_CONTENT", Kind = "Table"]}[Data],
+				    Selected = Table.SelectColumns(Source, {"TITLE_ID", "TITLE_NAME", "GENRE_NAME", "CONTENT_TYPE", "RUNTIME_MINUTES", "RELEASE_YEAR", "ADDED_DATE"}),
+				    Typed = Table.TransformColumnTypes(Selected, {{"TITLE_ID", Int64.Type}, {"TITLE_NAME", type text}, {"GENRE_NAME", type text}, {"CONTENT_TYPE", type text}, {"RUNTIME_MINUTES", Int64.Type}, {"RELEASE_YEAR", Int64.Type}, {"ADDED_DATE", type date}})
+				in
+				    Typed
+

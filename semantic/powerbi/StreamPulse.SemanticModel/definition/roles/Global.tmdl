@@ -1,0 +1,4 @@
+/// Global users: all markets.
+role Global
+	modelPermission: read
+

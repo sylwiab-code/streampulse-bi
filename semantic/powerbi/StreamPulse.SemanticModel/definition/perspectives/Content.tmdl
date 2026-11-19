@@ -1,0 +1,25 @@
+/// Viewing, engagement, and content performance.
+perspective Content
+
+	perspectiveTable Date
+		includeAll
+
+	perspectiveTable Market
+		includeAll
+
+	perspectiveTable Content
+		includeAll
+
+	perspectiveTable Customer
+		includeAll
+
+	perspectiveTable 'Viewing Sessions'
+		includeAll
+
+	perspectiveTable 'Subscribers Daily'
+
+		perspectiveMeasure 'Active Subscribers'
+
+	perspectiveTable 'Time Intelligence'
+		includeAll
+

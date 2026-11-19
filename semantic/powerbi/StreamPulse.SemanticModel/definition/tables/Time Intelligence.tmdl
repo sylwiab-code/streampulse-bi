@@ -1,0 +1,54 @@
+/// Time intelligence for any measure: pick a calculation in visuals or slicers. Snapshot measures (subscribers, MRR) return the value at the end of the shifted period.
+table 'Time Intelligence'
+
+	calculationGroup
+		precedence: 10
+
+		/// The measure as it is.
+		calculationItem Current = SELECTEDMEASURE ()
+
+		/// Month to date.
+		calculationItem MTD = CALCULATE ( SELECTEDMEASURE (), DATESMTD ( 'Date'[Date] ) )
+
+		/// Quarter to date.
+		calculationItem QTD = CALCULATE ( SELECTEDMEASURE (), DATESQTD ( 'Date'[Date] ) )
+
+		/// Year to date.
+		calculationItem YTD = CALCULATE ( SELECTEDMEASURE (), DATESYTD ( 'Date'[Date] ) )
+
+		/// Same period of the previous year.
+		calculationItem PY = CALCULATE ( SELECTEDMEASURE (), SAMEPERIODLASTYEAR ( 'Date'[Date] ) )
+
+		/// Change against the same period of the previous year; blank when either period has no value.
+		calculationItem YoY =
+				VAR CurrentValue = SELECTEDMEASURE ()
+				VAR PreviousValue = CALCULATE ( SELECTEDMEASURE (), SAMEPERIODLASTYEAR ( 'Date'[Date] ) )
+				RETURN
+				    IF ( NOT ISBLANK ( CurrentValue ) && NOT ISBLANK ( PreviousValue ), CurrentValue - PreviousValue )
+
+		/// Relative change against the same period of the previous year.
+		calculationItem 'YoY %' =
+				VAR CurrentValue = SELECTEDMEASURE ()
+				VAR PreviousValue = CALCULATE ( SELECTEDMEASURE (), SAMEPERIODLASTYEAR ( 'Date'[Date] ) )
+				RETURN
+				    IF ( NOT ISBLANK ( CurrentValue ), DIVIDE ( CurrentValue - PreviousValue, PreviousValue ) )
+
+			formatStringDefinition = "#,0.0%;-#,0.0%;#,0.0%"
+
+	/// Time calculation applied to the measures in the visual.
+	column 'Time Calculation'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: Name
+		sortByColumn: Ordinal
+
+	/// Order of the calculation items.
+	column Ordinal
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: Ordinal
+
+	partition 'Time Intelligence' = calculationGroup
+

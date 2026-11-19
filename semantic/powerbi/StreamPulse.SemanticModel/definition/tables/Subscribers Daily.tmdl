@@ -1,0 +1,141 @@
+/// Active subscribers, trialists, and MRR per day, market, and plan (kpi_subscribers_daily). Snapshot table: measures take the last day of the period, never a sum over days.
+table 'Subscribers Daily'
+
+	/// Paid subscriptions active on the last day of the period (the last loaded day for the current period). Payment-retry days count as active; trials do not.
+	measure 'Active Subscribers' =
+			VAR LastLoadedDay = CALCULATE ( MAX ( 'Subscribers Daily'[date_day] ), REMOVEFILTERS () )
+			VAR PeriodEnd = MIN ( MAX ( 'Date'[Date] ), LastLoadedDay )
+			RETURN
+			    IF (
+			        MIN ( 'Date'[Date] ) <= LastLoadedDay,
+			        CALCULATE ( SUM ( 'Subscribers Daily'[active_subscribers] ), 'Date'[Date] = PeriodEnd )
+			    )
+		formatString: #,0
+		displayFolder: Subscribers
+
+	/// Subscriptions in a free trial on the last day of the period.
+	measure Trialists =
+			VAR LastLoadedDay = CALCULATE ( MAX ( 'Subscribers Daily'[date_day] ), REMOVEFILTERS () )
+			VAR PeriodEnd = MIN ( MAX ( 'Date'[Date] ), LastLoadedDay )
+			RETURN
+			    IF (
+			        MIN ( 'Date'[Date] ) <= LastLoadedDay,
+			        CALCULATE ( SUM ( 'Subscribers Daily'[trialists] ), 'Date'[Date] = PeriodEnd )
+			    )
+		formatString: #,0
+		displayFolder: Subscribers
+
+	/// Monthly recurring revenue in EUR on the last day of the period: plan price normalized to a month (annual / 12) at the day's exchange rate.
+	measure 'MRR (EUR)' =
+			VAR LastLoadedDay = CALCULATE ( MAX ( 'Subscribers Daily'[date_day] ), REMOVEFILTERS () )
+			VAR PeriodEnd = MIN ( MAX ( 'Date'[Date] ), LastLoadedDay )
+			RETURN
+			    IF (
+			        MIN ( 'Date'[Date] ) <= LastLoadedDay,
+			        CALCULATE ( SUM ( 'Subscribers Daily'[mrr_eur] ), 'Date'[Date] = PeriodEnd )
+			    )
+		formatString: \€#,0
+		displayFolder: Revenue
+
+	/// MRR in the market's local currency on the last day of the period. Blank unless one currency is in context.
+	measure 'MRR (Local Currency)' =
+			VAR LastLoadedDay = CALCULATE ( MAX ( 'Subscribers Daily'[date_day] ), REMOVEFILTERS () )
+			VAR PeriodEnd = MIN ( MAX ( 'Date'[Date] ), LastLoadedDay )
+			RETURN
+			    IF (
+			        HASONEVALUE ( 'Market'[Currency Code] ) && MIN ( 'Date'[Date] ) <= LastLoadedDay,
+			        CALCULATE ( SUM ( 'Subscribers Daily'[mrr_local] ), 'Date'[Date] = PeriodEnd )
+			    )
+		displayFolder: Revenue
+
+		formatStringDefinition = "#,0 """ & SELECTEDVALUE ( 'Market'[Currency Code] ) & """"
+
+	/// Annual recurring revenue in EUR on the last day of the period (MRR x 12).
+	measure 'ARR (EUR)' =
+			VAR LastLoadedDay = CALCULATE ( MAX ( 'Subscribers Daily'[date_day] ), REMOVEFILTERS () )
+			VAR PeriodEnd = MIN ( MAX ( 'Date'[Date] ), LastLoadedDay )
+			RETURN
+			    IF (
+			        MIN ( 'Date'[Date] ) <= LastLoadedDay,
+			        CALCULATE ( SUM ( 'Subscribers Daily'[arr_eur] ), 'Date'[Date] = PeriodEnd )
+			    )
+		formatString: \€#,0
+		displayFolder: Revenue
+
+	/// Average revenue per user in EUR: MRR / active subscribers at the end of the period.
+	measure 'ARPU (EUR)' = DIVIDE ( [MRR (EUR)], [Active Subscribers] )
+		formatString: \€#,0.00
+		displayFolder: Revenue
+
+	/// Day.
+	column date_day
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: DATE_DAY
+
+	/// Market key.
+	column market_code
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: MARKET_CODE
+
+	/// Plan key.
+	column plan_id
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: PLAN_ID
+
+	/// Paid subscriptions active on the day.
+	column active_subscribers
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: ACTIVE_SUBSCRIBERS
+
+	/// Subscriptions in a free trial on the day.
+	column trialists
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: TRIALISTS
+
+	/// MRR in local currency.
+	column mrr_local
+		dataType: decimal
+		isHidden
+		formatString: #,0.00
+		summarizeBy: none
+		sourceColumn: MRR_LOCAL
+
+	/// MRR in EUR.
+	column mrr_eur
+		dataType: decimal
+		isHidden
+		formatString: #,0.00
+		summarizeBy: none
+		sourceColumn: MRR_EUR
+
+	/// ARR in EUR (MRR x 12).
+	column arr_eur
+		dataType: decimal
+		isHidden
+		formatString: #,0.00
+		summarizeBy: none
+		sourceColumn: ARR_EUR
+
+	partition 'Subscribers Daily' = m
+		mode: import
+		source =
+				let
+				    Source = StreamPulse{[Name = "KPI", Kind = "Schema"]}[Data]{[Name = "KPI_SUBSCRIBERS_DAILY", Kind = "Table"]}[Data],
+				    Selected = Table.SelectColumns(Source, {"DATE_DAY", "MARKET_CODE", "PLAN_ID", "ACTIVE_SUBSCRIBERS", "TRIALISTS", "MRR_LOCAL", "MRR_EUR", "ARR_EUR"}),
+				    Typed = Table.TransformColumnTypes(Selected, {{"DATE_DAY", type date}, {"MARKET_CODE", type text}, {"PLAN_ID", type text}, {"ACTIVE_SUBSCRIBERS", Int64.Type}, {"TRIALISTS", Int64.Type}, {"MRR_LOCAL", Currency.Type}, {"MRR_EUR", Currency.Type}, {"ARR_EUR", Currency.Type}})
+				in
+				    Typed
+

@@ -1,0 +1,55 @@
+/// Local extension for Germany: daily MRR net of VAT per plan (kpi_de_mrr_net_of_vat). Its market key lets row-level security apply.
+table 'DE MRR Net of VAT'
+
+	/// German MRR in EUR net of VAT at the standard rate, on the last day of the period.
+	measure 'DE MRR Net of VAT (EUR)' =
+			VAR LastLoadedDay = CALCULATE ( MAX ( 'DE MRR Net of VAT'[date_day] ), REMOVEFILTERS () )
+			VAR PeriodEnd = MIN ( MAX ( 'Date'[Date] ), LastLoadedDay )
+			RETURN
+			    IF (
+			        MIN ( 'Date'[Date] ) <= LastLoadedDay,
+			        CALCULATE ( SUM ( 'DE MRR Net of VAT'[mrr_net_of_vat] ), 'Date'[Date] = PeriodEnd )
+			    )
+		formatString: \€#,0
+		displayFolder: Local Views\DE
+
+	/// Day.
+	column date_day
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: DATE_DAY
+
+	/// Plan key.
+	column plan_id
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: PLAN_ID
+
+	/// Market key (always DE).
+	column market_code
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: MARKET_CODE
+
+	/// MRR net of VAT, in EUR.
+	column mrr_net_of_vat
+		dataType: decimal
+		isHidden
+		formatString: #,0.00
+		summarizeBy: none
+		sourceColumn: MRR_NET_OF_VAT
+
+	partition 'DE MRR Net of VAT' = m
+		mode: import
+		source =
+				let
+				    Source = StreamPulse{[Name = "KPI", Kind = "Schema"]}[Data]{[Name = "KPI_DE_MRR_NET_OF_VAT", Kind = "Table"]}[Data],
+				    Selected = Table.SelectColumns(Source, {"DATE_DAY", "MARKET_CODE", "PLAN_ID", "MRR_NET_OF_VAT"}),
+				    Typed = Table.TransformColumnTypes(Selected, {{"DATE_DAY", type date}, {"MARKET_CODE", type text}, {"PLAN_ID", type text}, {"MRR_NET_OF_VAT", Currency.Type}})
+				in
+				    Typed
+

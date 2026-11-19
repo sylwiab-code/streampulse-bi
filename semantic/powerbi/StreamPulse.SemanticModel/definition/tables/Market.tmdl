@@ -1,0 +1,38 @@
+/// Markets with their local currency (dim_market). Row-level security starts here.
+table Market
+
+	/// Market (country) code, for example DE.
+	column 'Market Code'
+		dataType: string
+		isKey
+		summarizeBy: none
+		sourceColumn: MARKET_CODE
+
+	/// Market name.
+	column Market
+		dataType: string
+		summarizeBy: none
+		sourceColumn: MARKET_NAME
+
+	/// Local currency code, for example SEK.
+	column 'Currency Code'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: CURRENCY_CODE
+
+	/// Local currency name.
+	column Currency
+		dataType: string
+		summarizeBy: none
+		sourceColumn: CURRENCY_NAME
+
+	partition Market = m
+		mode: import
+		source =
+				let
+				    Source = StreamPulse{[Name = "MARTS", Kind = "Schema"]}[Data]{[Name = "DIM_MARKET", Kind = "Table"]}[Data],
+				    Selected = Table.SelectColumns(Source, {"MARKET_CODE", "MARKET_NAME", "CURRENCY_CODE", "CURRENCY_NAME"}),
+				    Typed = Table.TransformColumnTypes(Selected, {{"MARKET_CODE", type text}, {"MARKET_NAME", type text}, {"CURRENCY_CODE", type text}, {"CURRENCY_NAME", type text}})
+				in
+				    Typed
+

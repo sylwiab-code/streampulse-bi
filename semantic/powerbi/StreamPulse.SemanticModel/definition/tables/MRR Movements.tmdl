@@ -1,0 +1,76 @@
+/// Monthly MRR movements per customer (fct_mrr_movements): new, reactivation, expansion, contraction, churn, and fx_effect, which makes the EUR bridge reconcile.
+table 'MRR Movements'
+
+	/// Sum of MRR changes in EUR. Over all movement types, including fx_effect, it equals closing minus opening MRR.
+	measure 'MRR Change (EUR)' = SUM ( 'MRR Movements'[mrr_change_eur] )
+		formatString: \€#,0
+		displayFolder: MRR Movements
+
+	/// Sum of MRR changes in local currency (fx_effect is 0). Blank unless one currency is in context.
+	measure 'MRR Change (Local Currency)' = IF ( HASONEVALUE ( 'Market'[Currency Code] ), SUM ( 'MRR Movements'[mrr_change_local] ) )
+		displayFolder: MRR Movements
+
+		formatStringDefinition = "#,0 """ & SELECTEDVALUE ( 'Market'[Currency Code] ) & """"
+
+	/// Distinct customers with an MRR movement in the period.
+	measure 'MRR Movement Customers' = DISTINCTCOUNT ( 'MRR Movements'[customer_id] )
+		formatString: #,0
+		displayFolder: MRR Movements
+
+	/// Month (first day).
+	column calendar_month
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: CALENDAR_MONTH
+
+	/// Customer key.
+	column customer_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: CUSTOMER_ID
+
+	/// new, reactivation, expansion, contraction, churn, or fx_effect.
+	column 'Movement Type'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: MOVEMENT_TYPE
+		sortByColumn: movement_type_rank
+
+	/// Bridge order of the movement type (new first, fx_effect last).
+	column movement_type_rank
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: MOVEMENT_TYPE_RANK
+
+	/// MRR change in local currency.
+	column mrr_change_local
+		dataType: decimal
+		isHidden
+		formatString: #,0.00
+		summarizeBy: none
+		sourceColumn: MRR_CHANGE_LOCAL
+
+	/// MRR change in EUR at the month-end rate.
+	column mrr_change_eur
+		dataType: decimal
+		isHidden
+		formatString: #,0.00
+		summarizeBy: none
+		sourceColumn: MRR_CHANGE_EUR
+
+	partition 'MRR Movements' = m
+		mode: import
+		source =
+				let
+				    Source = StreamPulse{[Name = "MARTS", Kind = "Schema"]}[Data]{[Name = "FCT_MRR_MOVEMENTS", Kind = "Table"]}[Data],
+				    Selected = Table.SelectColumns(Source, {"CALENDAR_MONTH", "CUSTOMER_ID", "MOVEMENT_TYPE", "MOVEMENT_TYPE_RANK", "MRR_CHANGE_LOCAL", "MRR_CHANGE_EUR"}),
+				    Typed = Table.TransformColumnTypes(Selected, {{"CALENDAR_MONTH", type date}, {"CUSTOMER_ID", Int64.Type}, {"MOVEMENT_TYPE", type text}, {"MOVEMENT_TYPE_RANK", Int64.Type}, {"MRR_CHANGE_LOCAL", Currency.Type}, {"MRR_CHANGE_EUR", Currency.Type}})
+				in
+				    Typed
+

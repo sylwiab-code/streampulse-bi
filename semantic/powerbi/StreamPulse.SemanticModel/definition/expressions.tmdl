@@ -1,0 +1,26 @@
+/// Snowflake account host, for example <account>.snowflakecomputing.com. The repository keeps a placeholder; set the real host with connection.py (README).
+expression SnowflakeServer = "ACCOUNT.snowflakecomputing.com" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+
+/// Snowflake database of the environment.
+expression SnowflakeDatabase = "STREAMPULSE_DEV" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+
+/// Snowflake warehouse for reporting queries.
+expression SnowflakeWarehouse = "WH_REPORT_DEV" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+
+/// Snowflake role for reporting (read-only on MARTS and KPI).
+expression SnowflakeRole = "REPORTER_DEV" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+
+/// The environment's Snowflake database; every table reads its schema and table from here.
+expression StreamPulse =
+		let
+		    Source = Snowflake.Databases(SnowflakeServer, SnowflakeWarehouse, [Role = SnowflakeRole, Implementation = "2.0"]),
+		    Database = Source{[Name = SnowflakeDatabase, Kind = "Database"]}[Data]
+		in
+		    Database
+
+/// Incremental refresh: start of the loaded range (inclusive). Power BI Desktop loads this range; the service replaces it with its partition boundaries.
+expression RangeStart = #datetime(2024, 1, 1, 0, 0, 0) meta [IsParameterQuery=true, Type="DateTime", IsParameterQueryRequired=true]
+
+/// Incremental refresh: end of the loaded range (exclusive).
+expression RangeEnd = #datetime(2028, 1, 1, 0, 0, 0) meta [IsParameterQuery=true, Type="DateTime", IsParameterQueryRequired=true]
+
