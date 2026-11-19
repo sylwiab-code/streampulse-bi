@@ -21,6 +21,7 @@ final as (
         date_trunc(month, date_day)::date as calendar_month,
         last_day(date_day)::date as month_end_date,
         date_trunc(quarter, date_day)::date as calendar_quarter,
+        ('Q' || quarter(date_day))::varchar as quarter_name,
         year(date_day)::number(38, 0) as calendar_year,
         month(date_day)::number(38, 0) as month_number,
         monthname(date_day)::varchar as month_name,
