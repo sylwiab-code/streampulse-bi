@@ -183,6 +183,15 @@ def test_tables_columns_measures_and_calculation_items_are_described(tables):
     assert missing == []
 
 
+def test_measure_names_are_unique_and_differ_from_column_names(tables):
+    # Power BI compares object names case-insensitively; Desktop refuses to load a measure
+    # named like a column (for example Trialists and trialists).
+    measures = [m.name.lower() for t in tables.values() for m in t.items if m.kind == "measure"]
+    columns = {c.name.lower() for t in tables.values() for c in t.items if c.kind == "column"}
+    assert sorted({m for m in measures if measures.count(m) > 1}) == []
+    assert sorted(set(measures) & columns) == []
+
+
 def test_measures_have_a_format_string(tables):
     missing = [
         f"{t.name}[{m.name}]"

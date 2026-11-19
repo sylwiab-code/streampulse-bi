@@ -20,7 +20,7 @@ table 'Subscribers Daily'
 			RETURN
 			    IF (
 			        MIN ( 'Date'[Date] ) <= LastLoadedDay,
-			        CALCULATE ( SUM ( 'Subscribers Daily'[trialists] ), 'Date'[Date] = PeriodEnd )
+			        CALCULATE ( SUM ( 'Subscribers Daily'[daily_trialists] ), 'Date'[Date] = PeriodEnd )
 			    )
 		formatString: #,0
 		displayFolder: Subscribers
@@ -98,7 +98,7 @@ table 'Subscribers Daily'
 		sourceColumn: ACTIVE_SUBSCRIBERS
 
 	/// Subscriptions in a free trial on the day.
-	column trialists
+	column daily_trialists
 		dataType: int64
 		isHidden
 		formatString: #,0
