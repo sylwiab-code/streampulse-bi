@@ -9,13 +9,6 @@ role Market
 			        'Security Market Access'[User Principal Name] = USERPRINCIPALNAME ()
 			    )
 
-	tablePermission Campaign =
-			'Campaign'[market_code]
-			    IN CALCULATETABLE (
-			        VALUES ( 'Security Market Access'[Market Code] ),
-			        'Security Market Access'[User Principal Name] = USERPRINCIPALNAME ()
-			    )
-
 	tablePermission 'Security Market Access' = 'Security Market Access'[User Principal Name] = USERPRINCIPALNAME ()
 
 	annotation PBI_Id = e1890a67e304457cbfd7fa22570f576e

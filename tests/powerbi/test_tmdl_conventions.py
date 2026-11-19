@@ -254,6 +254,18 @@ def test_financial_columns_are_secured_for_content_analysts(tables):
     assert financial - secured_columns() == set()
 
 
+def test_market_role_filters_only_the_market_and_its_mapping():
+    # A filter on another dimension also hides fact rows that relate to its blank row
+    # (a Campaign filter removed every customer without a campaign).
+    text = (DEFINITION / "roles" / "Market.tmdl").read_text(encoding="utf-8")
+    filtered = {
+        unquote(line.split("tablePermission ", 1)[1].split(" = ", 1)[0].removesuffix(" ="))
+        for line in text.split("\n")
+        if line.startswith("\ttablePermission ")
+    }
+    assert filtered == {"Market", "Security Market Access"}
+
+
 def polish_captions() -> set[tuple[str, str]]:
     text = (DEFINITION / "cultures" / "pl-PL.tmdl").read_text(encoding="utf-8")
     captions, table, current = set(), None, None

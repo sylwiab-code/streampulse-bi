@@ -1,4 +1,4 @@
-/// Quarterly campaigns per market and paid channel (dim_campaign). Not related to Market or Channel, to keep one filter path to each fact; row-level security filters it by its market.
+/// Quarterly campaigns per market and paid channel (dim_campaign). Not related to Market or Channel, to keep one filter path to each fact. Not filtered by row-level security: a filter here would also hide customers without a campaign; facts are filtered through Market.
 table Campaign
 	lineageTag: 0fa71100-c18b-4f4f-b969-f33c609286fb
 
@@ -21,16 +21,6 @@ table Campaign
 		lineageTag: 70a1b520-28da-42bb-a7ed-b67cb4f4135f
 		summarizeBy: none
 		sourceColumn: CAMPAIGN_NAME
-
-		annotation SummarizationSetBy = User
-
-	/// Market of the campaign (used by row-level security).
-	column market_code
-		dataType: string
-		isHidden
-		isAvailableInMdx: false
-		summarizeBy: none
-		sourceColumn: MARKET_CODE
 
 		annotation SummarizationSetBy = User
 
@@ -63,8 +53,8 @@ table Campaign
 		source =
 				let
 				    Source = StreamPulse{[Name = "MARTS", Kind = "Schema"]}[Data]{[Name = "DIM_CAMPAIGN", Kind = "Table"]}[Data],
-				    Selected = Table.SelectColumns(Source, {"CAMPAIGN_ID", "CAMPAIGN_NAME", "MARKET_CODE", "START_DATE", "END_DATE"}),
-				    Typed = Table.TransformColumnTypes(Selected, {{"CAMPAIGN_ID", Int64.Type}, {"CAMPAIGN_NAME", type text}, {"MARKET_CODE", type text}, {"START_DATE", type date}, {"END_DATE", type date}})
+				    Selected = Table.SelectColumns(Source, {"CAMPAIGN_ID", "CAMPAIGN_NAME", "START_DATE", "END_DATE"}),
+				    Typed = Table.TransformColumnTypes(Selected, {{"CAMPAIGN_ID", Int64.Type}, {"CAMPAIGN_NAME", type text}, {"START_DATE", type date}, {"END_DATE", type date}})
 				in
 				    Typed
 
