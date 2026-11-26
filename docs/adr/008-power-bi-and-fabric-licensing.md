@@ -46,6 +46,15 @@ Current terms (Microsoft Learn, checked 2026-11-15):
 
 Phase 5 starts by checking that a service principal can refresh a semantic model through the REST API on the trial capacity.
 
+## Update after Phase 5 (2026-11-26)
+
+This section records facts; the decision itself is not changed here.
+
+- The Fabric trial capacity was not available on the new tenant. Phase 5 ran on the Power BI Pro trial: the `StreamPulse DEV` workspace has no capacity.
+- Confirmed on Pro: the service principal (workspace Member) gets a token and refreshes the semantic model through the REST API, including incremental refresh ([ADR-011](011-power-bi-semantic-model.md)).
+- Not possible: the Execute Queries API does not accept a service principal on a semantic model with RLS, on any license. The automated post-refresh checks therefore move to Phase 7. The XMLA endpoint needs a capacity.
+- Phase 7 (fabric-cicd) and Phases 8-9 need a capacity. Which one, and when it starts, is decided in a new ADR before Phase 7.
+
 ## More Information
 
 - Open follow-up, decided before day 60: buy Fabric F2 pay-as-you-go (pausable) to finish Phases 8-9, or let the Fabric items lapse and keep the PBIP files in Git plus screenshots.

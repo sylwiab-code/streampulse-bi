@@ -11,7 +11,7 @@ Orchestration for StreamPulse with Airflow 3.3 on the Astro Runtime ([ADR-010](.
 | `transform_pipeline` | when the RAW asset changes | dbt build (Cosmos: one task per model, then its tests) → Power BI refresh → wait → validate → notify |
 | `maintenance` | weekly, Monday 06:00 UTC | table statistics → list CI schemas older than 7 days (drops them only with `execute=true`) |
 
-Every task retries twice with exponential backoff; a task that fails its last retry posts a Slack alert (`SLACK_WEBHOOK_URL`). The Power BI steps are skipped until `POWERBI_ENABLED=true` (Phase 5, [ADR-008](../../docs/adr/008-power-bi-and-fabric-licensing.md)).
+Every task retries twice with exponential backoff; a task that fails its last retry posts a Slack alert (`SLACK_WEBHOOK_URL`). The Power BI steps are skipped until `POWERBI_ENABLED=true`; they need `POWERBI_DATASET_ID` from the first publish of the semantic model ([semantic/powerbi/README.md](../../semantic/powerbi/README.md#publish)). Validation has no checks until Phase 7 ([ADR-011](../../docs/adr/011-power-bi-semantic-model.md)).
 
 ## Running locally
 

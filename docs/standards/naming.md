@@ -12,6 +12,7 @@ Names in StreamPulse are lowercase `snake_case` in English. Snowflake stores unq
 | KPI | `kpi_<name>[_<grain>]` | `kpi_churn_monthly` |
 | Local extensions | `kpi_<market>_<name>` | `kpi_de_mrr_net_of_vat` |
 | Snapshots | `snap_<entity>` | `snap_plan_prices` |
+| Seeds | `<area>_<entity>` | `security_market_access` |
 | Singular tests | `assert_<expectation>` | `assert_mrr_bridge_reconciles` |
 
 ## Columns
@@ -49,3 +50,16 @@ Further rules:
 | Database role | `<SCHEMA OR AREA>_<READ/WRITE>` | `ANALYTICS_READ` |
 | Service user | `SVC_<SERVICE>_<ENV>` | `SVC_LOADER_DEV` |
 | Masking policy | `PII_<KIND>` in `GOVERNANCE` | `PII_EMAIL` |
+
+## Power BI
+
+Business names in the semantic model; the full rules are in [semantic-model.md](semantic-model.md#names).
+
+| Object | Pattern | Example |
+|---|---|---|
+| Table | Business process or entity, title case | `Viewing Sessions`, `Customer` |
+| Visible column | Business name, title case | `Billing Period`, `Market Code` |
+| Hidden key or measure input | dbt column name | `customer_id`, `active_subscribers` |
+| Measure | Business name, currency in brackets | `MRR (EUR)`, `Monthly Churn Rate` |
+| Role | Audience | `Market`, `Global`, `Content Analyst` |
+| Workspace | `StreamPulse <ENV>` | `StreamPulse DEV` |
