@@ -2,7 +2,7 @@
 
 End-to-end BI portfolio project for StreamPulse, a fictional subscription video-on-demand (OTT) service operating in Poland, Germany, Sweden, and Norway. Synthetic data flows through Snowflake, dbt, and Airflow into Power BI and Microsoft Fabric, with CI/CD, automated tests, and guarded AI-assisted development.
 
-**Status:** Phase 4 (orchestration with Airflow) complete except the Power BI steps, which go live in Phase 5 ([ADR-008](docs/adr/008-power-bi-and-fabric-licensing.md)); see [orchestration/airflow/README.md](orchestration/airflow/README.md). Phase 3 (dbt transformations and KPI layer) is complete: staging, intermediate, star-schema marts with contracts, and KPI models with their definitions build and test green on DEV; documentation at https://sylwiab-code.github.io/streampulse-bi/. Phase 2 (Snowflake platform with Liquibase) is complete: one Liquibase command builds the DEV environment from zero, the loader puts the generated batches into the raw layer, and integration tests verify masking per role; setup in [docs/guides/snowflake-setup.md](docs/guides/snowflake-setup.md). Phase 1 (synthetic data generator) is complete: `uv run generate backfill` and `uv run generate daily --days 1` write deterministic Parquet batches; see [data_generator/README.md](data_generator/README.md). Phase 0 (foundations) is complete: `main` is protected by a ruleset, and a pull request with a failing lint cannot be merged ([demo PR #8](https://github.com/sylwiab-code/streampulse-bi/pull/8)). The phases and their Definition of Done are in [PLAN.md](PLAN.md); design decisions are in [docs/adr](docs/adr/README.md).
+**Status:** Phase 5 (Power BI semantic model) is complete: the PBIP model in TMDL imports the Snowflake marts and KPIs, with dynamic RLS per market, OLS for financial columns, Polish translations, and incremental refresh; BPA is clean, and the optimization pass cut memory by 88% ([ADR-011](docs/adr/011-power-bi-semantic-model.md), [performance report](docs/performance/semantic-model.md)). Phase 4 (orchestration with Airflow) is complete; the `powerbi` command that its refresh tasks call refreshes the published model as a service principal, and the automated post-refresh checks follow in Phase 7 ([ADR-008](docs/adr/008-power-bi-and-fabric-licensing.md)); see [orchestration/airflow/README.md](orchestration/airflow/README.md). Phase 3 (dbt transformations and KPI layer) is complete: staging, intermediate, star-schema marts with contracts, and KPI models with their definitions build and test green on DEV; documentation at https://sylwiab-code.github.io/streampulse-bi/. Phase 2 (Snowflake platform with Liquibase) is complete: one Liquibase command builds the DEV environment from zero, the loader puts the generated batches into the raw layer, and integration tests verify masking per role; setup in [docs/guides/snowflake-setup.md](docs/guides/snowflake-setup.md). Phase 1 (synthetic data generator) is complete: `uv run generate backfill` and `uv run generate daily --days 1` write deterministic Parquet batches; see [data_generator/README.md](data_generator/README.md). Phase 0 (foundations) is complete: `main` is protected by a ruleset, and a pull request with a failing lint cannot be merged ([demo PR #8](https://github.com/sylwiab-code/streampulse-bi/pull/8)). The phases and their Definition of Done are in [PLAN.md](PLAN.md); design decisions are in [docs/adr](docs/adr/README.md).
 
 ## Local development
 
@@ -72,4 +72,18 @@ The daily pipeline, backfill, and maintenance run on Airflow 3 (Astro) in [orche
 
 ```bash
 uv run python orchestration/airflow/run_astro.py start
+```
+
+## Power BI
+
+The semantic model is a Power BI project (PBIP) in [semantic/powerbi/](semantic/powerbi/README.md), following [docs/standards/semantic-model.md](docs/standards/semantic-model.md). Before opening it in Power BI Desktop, set the Snowflake host locally (Git keeps a placeholder):
+
+```bash
+uv run python semantic/powerbi/connection.py set
+```
+
+The Best Practice Analyzer runs locally on Windows:
+
+```bash
+uv run python semantic/powerbi/run_bpa.py
 ```

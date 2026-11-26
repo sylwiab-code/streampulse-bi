@@ -10,6 +10,7 @@ with subscribers as (
 final as (
     select
         date_day,
+        market_code,
         plan_id,
         active_subscribers,
         mrr_local as mrr_gross,

@@ -1,0 +1,127 @@
+/// Payment attempts, up to three per billing period, in local currency and EUR (fct_payments).
+table Payments
+	lineageTag: dc228e31-cc5e-4e08-aa7d-e28e7f6c4280
+
+	/// Payment attempts in the period, including retries.
+	measure 'Payment Attempts' = COUNTROWS ( Payments )
+		formatString: #,0
+		displayFolder: Payments
+		lineageTag: c541d483-fcd8-4775-8499-bc132c9f11fa
+
+	/// Payment attempts that failed.
+	measure 'Failed Payment Attempts' = CALCULATE ( COUNTROWS ( Payments ), Payments[Payment Status] = "failed" )
+		formatString: #,0
+		displayFolder: Payments
+		lineageTag: d2c51b51-ebac-4ab7-81d4-6bc600840501
+
+	/// Failed payment attempts / all payment attempts.
+	measure 'Payment Failure Rate' = DIVIDE ( [Failed Payment Attempts], [Payment Attempts] )
+		formatString: #,0.0%;-#,0.0%;#,0.0%
+		displayFolder: Payments
+		lineageTag: 83a34f99-a33b-4218-ac3f-4178d8d5e13a
+
+	/// Successful payments in EUR at the day's exchange rate.
+	measure 'Collected Payments (EUR)' = CALCULATE ( SUM ( Payments[amount_eur] ), Payments[Payment Status] = "succeeded" )
+		formatString: \€#,0
+		displayFolder: Payments
+		lineageTag: d8a269d3-90a3-49e0-9c53-3173c989f4f4
+
+	/// Customer key.
+	column customer_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		isAvailableInMdx: false
+		lineageTag: 1ad86789-41f3-4327-8898-91349ea16170
+		summarizeBy: none
+		sourceColumn: CUSTOMER_ID
+
+		annotation SummarizationSetBy = User
+
+	/// Plan key.
+	column plan_id
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 89283ff5-2835-4fad-8006-c10318b15065
+		summarizeBy: none
+		sourceColumn: PLAN_ID
+
+		annotation SummarizationSetBy = User
+
+	/// 1 = first attempt, 2-3 = retries.
+	column 'Attempt Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: 3779e5d6-3b41-438b-8b5c-d4ae3108ce94
+		summarizeBy: none
+		sourceColumn: ATTEMPT_NUMBER
+
+		annotation SummarizationSetBy = User
+
+	/// Attempt day.
+	column attempted_date
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		isAvailableInMdx: false
+		lineageTag: 3ac5993d-534d-4a1e-a678-b19b3d174c41
+		summarizeBy: none
+		sourceColumn: ATTEMPTED_DATE
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation SummarizationSetBy = User
+
+	/// succeeded or failed.
+	column 'Payment Status'
+		dataType: string
+		lineageTag: ed2522a5-25b8-4da6-9a20-fb31b611f369
+		summarizeBy: none
+		sourceColumn: PAYMENT_STATUS
+
+		annotation SummarizationSetBy = User
+
+	/// Reason for a failed attempt.
+	column 'Failure Reason'
+		dataType: string
+		lineageTag: 89fc919a-85b6-421e-baba-74f9935b34a7
+		summarizeBy: none
+		sourceColumn: FAILURE_REASON
+
+		annotation SummarizationSetBy = User
+
+	/// Amount in local currency.
+	column amount_local
+		dataType: decimal
+		isHidden
+		formatString: #,0.00
+		isAvailableInMdx: false
+		lineageTag: 2ecca391-2590-4869-93aa-913cd746d596
+		summarizeBy: none
+		sourceColumn: AMOUNT_LOCAL
+
+		annotation SummarizationSetBy = User
+
+	/// Amount in EUR at the day's rate.
+	column amount_eur
+		dataType: decimal
+		isHidden
+		formatString: #,0.00
+		isAvailableInMdx: false
+		lineageTag: 1b976bd5-06d7-4105-b7bb-28ecd9104585
+		summarizeBy: none
+		sourceColumn: AMOUNT_EUR
+
+		annotation SummarizationSetBy = User
+
+	partition Payments = m
+		mode: import
+		source =
+				let
+				    Source = StreamPulse{[Name = "MARTS", Kind = "Schema"]}[Data]{[Name = "FCT_PAYMENTS", Kind = "Table"]}[Data],
+				    Selected = Table.SelectColumns(Source, {"CUSTOMER_ID", "PLAN_ID", "ATTEMPT_NUMBER", "ATTEMPTED_DATE", "PAYMENT_STATUS", "FAILURE_REASON", "AMOUNT_LOCAL", "AMOUNT_EUR"}),
+				    Typed = Table.TransformColumnTypes(Selected, {{"CUSTOMER_ID", Int64.Type}, {"PLAN_ID", type text}, {"ATTEMPT_NUMBER", Int64.Type}, {"ATTEMPTED_DATE", type date}, {"PAYMENT_STATUS", type text}, {"FAILURE_REASON", type text}, {"AMOUNT_LOCAL", Currency.Type}, {"AMOUNT_EUR", Currency.Type}})
+				in
+				    Typed
+

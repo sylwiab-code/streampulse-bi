@@ -1,8 +1,9 @@
 """Post-refresh validation: each check compares one number from Snowflake with one from Power BI.
 
 Checks live in checks.json next to this module as a list of {"name", "sql", "dax",
-"tolerance"}. Each query returns one value. The list is empty until the semantic model exists
-(Phase 5).
+"tolerance"}. Each query returns one value. The list stays empty until
+Phase 7: the Execute Queries API does not accept a service principal on a model with RLS
+(ADR-011).
 """
 
 from __future__ import annotations

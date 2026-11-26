@@ -1,0 +1,140 @@
+/// Viewing sessions (fct_viewing_sessions), loaded with incremental refresh: two years kept, the last 7 days refreshed to pick up late sessions. Market comes through Customer.
+table 'Viewing Sessions'
+	lineageTag: 517d560e-2db2-4116-82a7-0d79b1965f13
+
+	refreshPolicy
+		policyType: basic
+		rollingWindowGranularity: year
+		rollingWindowPeriods: 2
+		incrementalGranularity: day
+		incrementalPeriods: 7
+		sourceExpression =
+			let
+			    Source = StreamPulse{[Name = "MARTS", Kind = "Schema"]}[Data]{[Name = "FCT_VIEWING_SESSIONS", Kind = "Table"]}[Data],
+			    InRange = Table.SelectRows(Source, each [STARTED_AT] >= RangeStart and [STARTED_AT] < RangeEnd),
+			    Selected = Table.SelectColumns(InRange, {"CUSTOMER_ID", "TITLE_ID", "STARTED_DATE", "WATCH_MINUTES", "COMPLETION_RATE", "DEVICE_TYPE", "APP_VERSION"}),
+			    Typed = Table.TransformColumnTypes(Selected, {{"CUSTOMER_ID", Int64.Type}, {"TITLE_ID", Int64.Type}, {"STARTED_DATE", type date}, {"WATCH_MINUTES", Int64.Type}, {"COMPLETION_RATE", Currency.Type}, {"DEVICE_TYPE", type text}, {"APP_VERSION", type text}})
+			in
+			    Typed
+
+	/// Viewing sessions in the period.
+	measure Sessions = COUNTROWS ( 'Viewing Sessions' )
+		formatString: #,0
+		displayFolder: Engagement
+		lineageTag: 30c62846-73da-4167-9f13-fc4eb1cb01bf
+
+	/// Hours watched: watch minutes / 60.
+	measure 'Watch Hours' = DIVIDE ( SUM ( 'Viewing Sessions'[watch_minutes] ), 60 )
+		formatString: #,0
+		displayFolder: Engagement
+		lineageTag: f59c862b-7726-4a68-8b44-8420e8641138
+
+	/// Distinct customers with a session (reach, for a title).
+	measure Viewers = DISTINCTCOUNT ( 'Viewing Sessions'[customer_id] )
+		formatString: #,0
+		displayFolder: Engagement
+		lineageTag: fa0ba568-c23d-4f10-8f72-3cbf7874af2f
+
+	/// Average over sessions of minutes watched / runtime, capped at 100%.
+	measure 'Average Completion Rate' = AVERAGE ( 'Viewing Sessions'[completion_rate] )
+		formatString: #,0.0%;-#,0.0%;#,0.0%
+		displayFolder: Engagement
+		lineageTag: 5fef9128-3e4c-486d-9f2b-91ef417ea800
+
+	/// Watch hours / active subscribers at the end of the period. Subscribers are not split by title or genre, so for a genre this is the genre's hours per subscriber.
+	measure 'Watch Hours per Subscriber' = DIVIDE ( [Watch Hours], [Active Subscribers] )
+		formatString: #,0.0
+		displayFolder: Engagement
+		lineageTag: a7966817-660e-42a2-8fd9-189304c92956
+
+	/// Customer key.
+	column customer_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		isAvailableInMdx: false
+		lineageTag: e710b437-bc14-41af-b3af-ddfb0d73c666
+		summarizeBy: none
+		sourceColumn: CUSTOMER_ID
+
+		annotation SummarizationSetBy = User
+
+	/// Title key.
+	column title_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		isAvailableInMdx: false
+		lineageTag: 937e3b7a-dc57-43fc-8983-4e3e16103d75
+		summarizeBy: none
+		sourceColumn: TITLE_ID
+
+		annotation SummarizationSetBy = User
+
+	/// Start day.
+	column started_date
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		isAvailableInMdx: false
+		lineageTag: 50462382-e4eb-4334-b462-70dd0fdb318a
+		summarizeBy: none
+		sourceColumn: STARTED_DATE
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation SummarizationSetBy = User
+
+	/// Minutes watched.
+	column watch_minutes
+		dataType: int64
+		isHidden
+		formatString: #,0
+		isAvailableInMdx: false
+		lineageTag: a6839224-09e1-45a5-abf1-609209cc1689
+		summarizeBy: none
+		sourceColumn: WATCH_MINUTES
+
+		annotation SummarizationSetBy = User
+
+	/// Minutes watched / runtime, capped at 1.
+	column completion_rate
+		dataType: decimal
+		isHidden
+		formatString: 0.0%
+		isAvailableInMdx: false
+		lineageTag: 2dc1296f-c9f3-46f2-80b0-711542fdb412
+		summarizeBy: none
+		sourceColumn: COMPLETION_RATE
+
+		annotation SummarizationSetBy = User
+
+	/// tv, mobile, web, or tablet.
+	column 'Device Type'
+		dataType: string
+		lineageTag: a5e0569e-7147-4888-9f6f-a94363937016
+		summarizeBy: none
+		sourceColumn: DEVICE_TYPE
+
+		annotation SummarizationSetBy = User
+
+	/// App version; blank before the 2026-01-01 schema change.
+	column 'App Version'
+		dataType: string
+		lineageTag: 373eeef1-c626-4449-8a45-71bc51c2e086
+		summarizeBy: none
+		sourceColumn: APP_VERSION
+
+		annotation SummarizationSetBy = User
+
+	partition 'Viewing Sessions' = m
+		mode: import
+		source =
+				let
+				    Source = StreamPulse{[Name = "MARTS", Kind = "Schema"]}[Data]{[Name = "FCT_VIEWING_SESSIONS", Kind = "Table"]}[Data],
+				    InRange = Table.SelectRows(Source, each [STARTED_AT] >= RangeStart and [STARTED_AT] < RangeEnd),
+				    Selected = Table.SelectColumns(InRange, {"CUSTOMER_ID", "TITLE_ID", "STARTED_DATE", "WATCH_MINUTES", "COMPLETION_RATE", "DEVICE_TYPE", "APP_VERSION"}),
+				    Typed = Table.TransformColumnTypes(Selected, {{"CUSTOMER_ID", Int64.Type}, {"TITLE_ID", Int64.Type}, {"STARTED_DATE", type date}, {"WATCH_MINUTES", Int64.Type}, {"COMPLETION_RATE", Currency.Type}, {"DEVICE_TYPE", type text}, {"APP_VERSION", type text}})
+				in
+				    Typed
+

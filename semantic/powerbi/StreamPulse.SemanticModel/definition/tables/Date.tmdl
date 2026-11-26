@@ -1,0 +1,120 @@
+/// Reporting calendar, one row per day (dim_date). Marked as the date table for time intelligence.
+table Date
+	lineageTag: 9b835595-67b8-4fcc-b327-c97a5e5599c2
+	dataCategory: Time
+
+	/// Calendar day.
+	column Date
+		dataType: dateTime
+		isKey
+		formatString: yyyy-mm-dd
+		lineageTag: 2f413758-a188-41ea-8603-57c37319bbac
+		summarizeBy: none
+		sourceColumn: DATE_DAY
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation SummarizationSetBy = User
+
+	/// Calendar year.
+	column Year
+		dataType: int64
+		formatString: 0
+		lineageTag: 054b3e5d-61b3-4901-a418-5afc4d8fe9d2
+		summarizeBy: none
+		sourceColumn: CALENDAR_YEAR
+
+		annotation SummarizationSetBy = User
+
+	/// Quarter of the year (Q1-Q4).
+	column Quarter
+		dataType: string
+		lineageTag: 4dee0deb-3cab-4188-b2f8-5defa5d1eedf
+		summarizeBy: none
+		sourceColumn: QUARTER_NAME
+
+		annotation SummarizationSetBy = User
+
+	/// First day of the month, shown as month and year.
+	column Month
+		dataType: dateTime
+		formatString: mmm yyyy
+		lineageTag: 747ffb91-2da9-440e-af48-fde0ed2444de
+		summarizeBy: none
+		sourceColumn: CALENDAR_MONTH
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation SummarizationSetBy = User
+
+	/// Short month name (Jan-Dec).
+	column 'Month Name'
+		dataType: string
+		lineageTag: 84446cf6-8e4f-4d51-9e62-cc908297ac4d
+		summarizeBy: none
+		sourceColumn: MONTH_NAME
+		sortByColumn: 'Month Number'
+
+		annotation SummarizationSetBy = User
+
+	/// Month number (1-12).
+	column 'Month Number'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 177b1e85-d0ae-44c3-8888-cac5c5d51b2d
+		summarizeBy: none
+		sourceColumn: MONTH_NUMBER
+
+		annotation SummarizationSetBy = User
+
+	/// ISO week number.
+	column 'ISO Week'
+		dataType: int64
+		formatString: 0
+		lineageTag: b5cff0ef-bfd4-4702-a867-0153f8651ce8
+		summarizeBy: none
+		sourceColumn: ISO_WEEK_NUMBER
+
+		annotation SummarizationSetBy = User
+
+	/// Short day name (Mon-Sun).
+	column 'Day of Week'
+		dataType: string
+		lineageTag: bd87c9cb-fa86-47bf-8e85-613869deb3af
+		summarizeBy: none
+		sourceColumn: DAY_NAME
+		sortByColumn: 'Day of Week Number'
+
+		annotation SummarizationSetBy = User
+
+	/// ISO day of week (1 = Monday).
+	column 'Day of Week Number'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: b124c8d8-84bc-4f4c-8d0a-e2606176223f
+		summarizeBy: none
+		sourceColumn: ISO_DAY_OF_WEEK
+
+		annotation SummarizationSetBy = User
+
+	/// Saturday or Sunday.
+	column 'Is Weekend'
+		dataType: boolean
+		lineageTag: 83ec2e52-97ac-4f53-a341-7190ef84892f
+		summarizeBy: none
+		sourceColumn: IS_WEEKEND
+
+		annotation SummarizationSetBy = User
+
+	partition Date = m
+		mode: import
+		source =
+				let
+				    Source = StreamPulse{[Name = "MARTS", Kind = "Schema"]}[Data]{[Name = "DIM_DATE", Kind = "Table"]}[Data],
+				    Selected = Table.SelectColumns(Source, {"DATE_DAY", "CALENDAR_YEAR", "QUARTER_NAME", "CALENDAR_MONTH", "MONTH_NUMBER", "MONTH_NAME", "ISO_WEEK_NUMBER", "ISO_DAY_OF_WEEK", "DAY_NAME", "IS_WEEKEND"}),
+				    Typed = Table.TransformColumnTypes(Selected, {{"DATE_DAY", type date}, {"CALENDAR_YEAR", Int64.Type}, {"QUARTER_NAME", type text}, {"CALENDAR_MONTH", type date}, {"MONTH_NUMBER", Int64.Type}, {"MONTH_NAME", type text}, {"ISO_WEEK_NUMBER", Int64.Type}, {"ISO_DAY_OF_WEEK", Int64.Type}, {"DAY_NAME", type text}, {"IS_WEEKEND", type logical}})
+				in
+				    Typed
+

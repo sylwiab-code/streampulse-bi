@@ -1,0 +1,67 @@
+[
+  {
+    "name": "MRR (EUR), last loaded day",
+    "sql": "select sum(mrr_eur) from kpi.kpi_subscribers_daily where date_day = (select max(date_day) from kpi.kpi_subscribers_daily)",
+    "dax": "EVALUATE ROW(\"value\", [MRR (EUR)])"
+  },
+  {
+    "name": "Active subscribers, last loaded day",
+    "sql": "select sum(active_subscribers) from kpi.kpi_subscribers_daily where date_day = (select max(date_day) from kpi.kpi_subscribers_daily)",
+    "dax": "EVALUATE ROW(\"value\", [Active Subscribers])"
+  },
+  {
+    "name": "Trialists, last loaded day",
+    "sql": "select sum(trialists) from kpi.kpi_subscribers_daily where date_day = (select max(date_day) from kpi.kpi_subscribers_daily)",
+    "dax": "EVALUATE ROW(\"value\", [Trialists])"
+  },
+  {
+    "name": "Churned subscribers, all months",
+    "sql": "select sum(churned_subscribers) from kpi.kpi_churn_monthly",
+    "dax": "EVALUATE ROW(\"value\", [Churned Subscribers])"
+  },
+  {
+    "name": "Trials started, all months",
+    "sql": "select sum(trials_started) from kpi.kpi_trial_conversion_monthly",
+    "dax": "EVALUATE ROW(\"value\", [Trials Started])"
+  },
+  {
+    "name": "Net MRR change (EUR), all months",
+    "sql": "select sum(mrr_change_eur) from marts.fct_mrr_movements",
+    "dax": "EVALUATE ROW(\"value\", [MRR Change (EUR)])"
+  },
+  {
+    "name": "Collected payments (EUR), all days",
+    "sql": "select sum(amount_eur) from marts.fct_payments where payment_status = 'succeeded'",
+    "dax": "EVALUATE ROW(\"value\", [Collected Payments (EUR)])"
+  },
+  {
+    "name": "Marketing spend (EUR), all months",
+    "sql": "select sum(spend_eur) from kpi.kpi_cac_ltv_monthly",
+    "dax": "EVALUATE ROW(\"value\", [Marketing Spend (EUR)])"
+  },
+  {
+    "name": "Cohort customers, all cohorts",
+    "sql": "select sum(cohort_customers) from kpi.kpi_cohort_retention where months_since_first_payment = 0",
+    "dax": "EVALUATE ROW(\"value\", [Cohort Customers])"
+  },
+  {
+    "name": "Viewing sessions, all days",
+    "sql": "select count(*) from marts.fct_viewing_sessions",
+    "dax": "EVALUATE ROW(\"value\", [Sessions])"
+  },
+  {
+    "name": "Watch hours, all days",
+    "sql": "select sum(watch_minutes) / 60 from marts.fct_viewing_sessions",
+    "dax": "EVALUATE ROW(\"value\", [Watch Hours])"
+  },
+  {
+    "name": "Viewers, all days",
+    "sql": "select count(distinct customer_id) from marts.fct_viewing_sessions",
+    "dax": "EVALUATE ROW(\"value\", [Viewers])"
+  },
+  {
+    "name": "DE MRR net of VAT (EUR), last loaded day",
+    "sql": "select sum(mrr_net_of_vat) from kpi.kpi_de_mrr_net_of_vat where date_day = (select max(date_day) from kpi.kpi_de_mrr_net_of_vat)",
+    "dax": "EVALUATE ROW(\"value\", [DE MRR Net of VAT (EUR)])"
+  }
+]

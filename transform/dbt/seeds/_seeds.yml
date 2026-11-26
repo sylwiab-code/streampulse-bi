@@ -1,0 +1,32 @@
+version: 2
+
+seeds:
+  - name: security_market_access
+    description: >
+      Row-level security mapping for the Power BI semantic model (ADR-011): the markets each
+      user may see. Users without a row see no market data in the Market role. The users are
+      fictional (streampulse.example) until real report users exist.
+    config:
+      column_types:
+        user_principal_name: varchar
+        market_code: varchar
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [user_principal_name, market_code]
+    columns:
+      - name: user_principal_name
+        description: User principal name (sign-in name), lowercase.
+        data_tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              arguments:
+                regex: "^[a-z0-9._-]+@[a-z0-9.-]+$"
+      - name: market_code
+        description: Market the user may see.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_market')
+                field: market_code

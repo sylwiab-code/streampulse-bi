@@ -1,0 +1,72 @@
+[
+  {
+    "ID": "SP_MEASURE_DESCRIPTION",
+    "Name": "[StreamPulse] Measures have a description",
+    "Category": "Maintenance",
+    "Description": "Every measure explains its business meaning in a /// description (CLAUDE.md, ADR-011).",
+    "Severity": 3,
+    "Scope": "Measure",
+    "Expression": "string.IsNullOrWhitespace(Description)",
+    "CompatibilityLevel": 1200
+  },
+  {
+    "ID": "SP_COLUMN_DESCRIPTION",
+    "Name": "[StreamPulse] Columns have a description",
+    "Category": "Maintenance",
+    "Description": "Every column, hidden or not, has a /// description (PLAN.md Phase 5).",
+    "Severity": 3,
+    "Scope": "DataColumn, CalculatedColumn, CalculatedTableColumn",
+    "Expression": "string.IsNullOrWhitespace(Description)",
+    "CompatibilityLevel": 1200
+  },
+  {
+    "ID": "SP_MEASURE_FORMAT",
+    "Name": "[StreamPulse] Measures have a format string",
+    "Category": "Formatting",
+    "Description": "Every measure has a format string or a dynamic format string.",
+    "Severity": 3,
+    "Scope": "Measure",
+    "Expression": "string.IsNullOrWhitespace(FormatString) and string.IsNullOrWhitespace(FormatStringExpression)",
+    "CompatibilityLevel": 1200
+  },
+  {
+    "ID": "SP_MEASURE_DISPLAY_FOLDER",
+    "Name": "[StreamPulse] Visible measures are in a display folder",
+    "Category": "Maintenance",
+    "Description": "Visible measures are grouped in display folders by subject.",
+    "Severity": 2,
+    "Scope": "Measure",
+    "Expression": "not IsHidden and string.IsNullOrWhitespace(DisplayFolder)",
+    "CompatibilityLevel": 1200
+  },
+  {
+    "ID": "SP_AUTO_DATE_TIME_OFF",
+    "Name": "[StreamPulse] Auto date/time is off",
+    "Category": "Performance",
+    "Description": "Auto date/time adds a hidden date table per date column; the model uses its own Date table.",
+    "Severity": 2,
+    "Scope": "Model",
+    "Expression": "GetAnnotation(\"__PBI_TimeIntelligenceEnabled\") <> \"0\"",
+    "CompatibilityLevel": 1200
+  },
+  {
+    "ID": "SP_FINANCIAL_COLUMNS_SECURED",
+    "Name": "[StreamPulse] Financial columns are hidden from Content Analyst",
+    "Category": "Error Prevention",
+    "Description": "Columns with amounts (*_eur, *_local, mrr_*) are secured with object-level security in the Content Analyst role (ADR-011).",
+    "Severity": 3,
+    "Scope": "DataColumn",
+    "Expression": "(Name.EndsWith(\"_eur\") or Name.EndsWith(\"_local\") or Name.StartsWith(\"mrr_\")) and ObjectLevelSecurity[\"Content Analyst\"].ToString() <> \"None\"",
+    "CompatibilityLevel": 1400
+  },
+  {
+    "ID": "SP_SINGLE_DIRECTION_RELATIONSHIPS",
+    "Name": "[StreamPulse] Relationships filter in one direction",
+    "Category": "Performance",
+    "Description": "Bidirectional filters make results hard to predict and slow; use them only with a documented exception.",
+    "Severity": 2,
+    "Scope": "Relationship",
+    "Expression": "CrossFilteringBehavior == CrossFilteringBehavior.BothDirections",
+    "CompatibilityLevel": 1200
+  }
+]

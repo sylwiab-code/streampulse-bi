@@ -1,0 +1,13 @@
+// Content: top 20 titles of 2026 by watch hours, with viewers and completion.
+EVALUATE
+TOPN (
+    20,
+    SUMMARIZECOLUMNS (
+        'Content'[Title],
+        TREATAS ( { 2026 }, 'Date'[Year] ),
+        "Watch Hours", [Watch Hours],
+        "Viewers", [Viewers],
+        "Average Completion Rate", [Average Completion Rate]
+    ),
+    [Watch Hours], DESC
+)

@@ -1,0 +1,50 @@
+/// Subscribers, revenue, churn, trials, retention, and acquisition for management reporting.
+perspective Executive
+
+	perspectiveTable Date
+		includeAll
+
+	perspectiveTable Market
+		includeAll
+
+	perspectiveTable Plan
+		includeAll
+
+	perspectiveTable Channel
+		includeAll
+
+	perspectiveTable Campaign
+		includeAll
+
+	perspectiveTable 'Subscribers Daily'
+		includeAll
+
+	perspectiveTable 'MRR Movements'
+		includeAll
+
+	perspectiveTable Churn
+		includeAll
+
+	perspectiveTable 'Trial Conversion'
+		includeAll
+
+	perspectiveTable 'Cohort Retention'
+		includeAll
+
+	perspectiveTable 'Acquisition Cost'
+		includeAll
+
+	perspectiveTable 'DE MRR Net of VAT'
+		includeAll
+
+	perspectiveTable 'Time Intelligence'
+		includeAll
+
+	perspectiveTable 'KPI Selector'
+		includeAll
+
+	perspectiveTable 'Dimension Selector'
+		includeAll
+
+	annotation BestPracticeAnalyzer_IgnoreRules = {"RuleIDs":["PERSPECTIVES_WITH_NO_OBJECTS"]}
+

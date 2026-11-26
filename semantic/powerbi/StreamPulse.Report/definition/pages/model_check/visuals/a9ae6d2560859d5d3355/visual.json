@@ -1,0 +1,64 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "name": "a9ae6d2560859d5d3355",
+  "position": {
+    "x": 166.41386782231851,
+    "y": 141.45178764897074,
+    "z": 0,
+    "height": 148.10834236186349,
+    "width": 346.14084507042253
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Market"
+                    }
+                  },
+                  "Property": "Market Code"
+                }
+              },
+              "queryRef": "Market.Market Code",
+              "nativeQueryRef": "Market Code"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Subscribers Daily"
+                    }
+                  },
+                  "Property": "Active Subscribers"
+                }
+              },
+              "queryRef": "Subscribers Daily.Active Subscribers",
+              "nativeQueryRef": "Active Subscribers"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Viewing Sessions"
+                    }
+                  },
+                  "Property": "Sessions"
+                }
+              },
+              "queryRef": "Viewing Sessions.Sessions",
+              "nativeQueryRef": "Sessions"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
