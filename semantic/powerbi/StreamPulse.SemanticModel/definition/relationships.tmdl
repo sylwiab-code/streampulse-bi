@@ -1,0 +1,112 @@
+relationship 'Subscribers Daily date_day to Date'
+	fromColumn: 'Subscribers Daily'.date_day
+	toColumn: Date.Date
+
+relationship 'Subscribers Daily market_code to Market'
+	fromColumn: 'Subscribers Daily'.market_code
+	toColumn: Market.'Market Code'
+
+relationship 'Subscribers Daily plan_id to Plan'
+	fromColumn: 'Subscribers Daily'.plan_id
+	toColumn: Plan.plan_id
+
+relationship 'MRR Movements calendar_month to Date'
+	fromColumn: 'MRR Movements'.calendar_month
+	toColumn: Date.Date
+
+relationship 'MRR Movements customer_id to Customer'
+	fromColumn: 'MRR Movements'.customer_id
+	toColumn: Customer.customer_id
+
+relationship 'Churn calendar_month to Date'
+	fromColumn: Churn.calendar_month
+	toColumn: Date.Date
+
+relationship 'Churn market_code to Market'
+	fromColumn: Churn.market_code
+	toColumn: Market.'Market Code'
+
+relationship 'Trial Conversion trial_start_month to Date'
+	fromColumn: 'Trial Conversion'.trial_start_month
+	toColumn: Date.Date
+
+relationship 'Trial Conversion market_code to Market'
+	fromColumn: 'Trial Conversion'.market_code
+	toColumn: Market.'Market Code'
+
+relationship 'Trial Conversion acquisition_channel to Channel'
+	fromColumn: 'Trial Conversion'.acquisition_channel
+	toColumn: Channel.'Acquisition Channel'
+
+relationship 'Trial Conversion campaign_id to Campaign'
+	fromColumn: 'Trial Conversion'.campaign_id
+	toColumn: Campaign.campaign_id
+
+relationship 'Cohort Retention cohort_month to Date'
+	fromColumn: 'Cohort Retention'.cohort_month
+	toColumn: Date.Date
+
+relationship 'Cohort Retention market_code to Market'
+	fromColumn: 'Cohort Retention'.market_code
+	toColumn: Market.'Market Code'
+
+relationship 'Acquisition Cost calendar_month to Date'
+	fromColumn: 'Acquisition Cost'.calendar_month
+	toColumn: Date.Date
+
+relationship 'Acquisition Cost market_code to Market'
+	fromColumn: 'Acquisition Cost'.market_code
+	toColumn: Market.'Market Code'
+
+relationship 'Acquisition Cost acquisition_channel to Channel'
+	fromColumn: 'Acquisition Cost'.acquisition_channel
+	toColumn: Channel.'Acquisition Channel'
+
+relationship 'Payments attempted_date to Date'
+	fromColumn: Payments.attempted_date
+	toColumn: Date.Date
+
+relationship 'Payments customer_id to Customer'
+	fromColumn: Payments.customer_id
+	toColumn: Customer.customer_id
+
+relationship 'Payments plan_id to Plan'
+	fromColumn: Payments.plan_id
+	toColumn: Plan.plan_id
+
+relationship 'Viewing Sessions started_date to Date'
+	fromColumn: 'Viewing Sessions'.started_date
+	toColumn: Date.Date
+
+relationship 'Viewing Sessions customer_id to Customer'
+	fromColumn: 'Viewing Sessions'.customer_id
+	toColumn: Customer.customer_id
+
+relationship 'Viewing Sessions title_id to Content'
+	fromColumn: 'Viewing Sessions'.title_id
+	toColumn: Content.title_id
+
+relationship 'Customer market_code to Market'
+	fromColumn: Customer.market_code
+	toColumn: Market.'Market Code'
+
+relationship 'Customer acquisition_channel to Channel'
+	fromColumn: Customer.acquisition_channel
+	toColumn: Channel.'Acquisition Channel'
+
+relationship 'Customer campaign_id to Campaign'
+	fromColumn: Customer.campaign_id
+	toColumn: Campaign.campaign_id
+
+relationship 'DE MRR Net of VAT date_day to Date'
+	fromColumn: 'DE MRR Net of VAT'.date_day
+	toColumn: Date.Date
+
+relationship 'DE MRR Net of VAT plan_id to Plan'
+	fromColumn: 'DE MRR Net of VAT'.plan_id
+	toColumn: Plan.plan_id
+
+relationship 'DE MRR Net of VAT market_code to Market'
+	fromColumn: 'DE MRR Net of VAT'.market_code
+	toColumn: Market.'Market Code'
+

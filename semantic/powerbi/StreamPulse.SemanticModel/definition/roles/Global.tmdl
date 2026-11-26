@@ -1,0 +1,6 @@
+/// Global users: all markets.
+role Global
+	modelPermission: read
+
+	annotation PBI_Id = b9ec24156f3444cd9ee0b1e1af9c2385
+

@@ -19,6 +19,9 @@ models:
       - name: calendar_quarter
         data_type: date
         description: "First day of the quarter."
+      - name: quarter_name
+        data_type: varchar
+        description: "Quarter of the year (Q1-Q4)."
       - name: calendar_year
         data_type: number(38,0)
         description: "Year number."
@@ -410,6 +413,11 @@ models:
           - accepted_values:
               arguments:
                 values: ['new', 'reactivation', 'expansion', 'contraction', 'churn', 'fx_effect']
+      - name: movement_type_rank
+        data_type: number(38,0)
+        description: "Order of the movement type in the MRR bridge (1 = new, 6 = fx_effect)."
+        data_tests:
+          - not_null
       - name: currency_code
         data_type: varchar
         description: "Local currency."

@@ -1,0 +1,33 @@
+/// Acquisition channels; paid channels have campaigns and spend (dim_channel).
+table Channel
+	lineageTag: 8f106592-599d-435e-bd3b-7b023748d568
+
+	/// Acquisition channel.
+	column 'Acquisition Channel'
+		dataType: string
+		isKey
+		lineageTag: a535a8eb-63d2-4761-8a3c-3ccacec54029
+		summarizeBy: none
+		sourceColumn: ACQUISITION_CHANNEL
+
+		annotation SummarizationSetBy = User
+
+	/// True when the channel has campaigns with spend.
+	column 'Is Paid Channel'
+		dataType: boolean
+		lineageTag: 44f32b45-3c40-4ce5-a3c1-9e6a6d905e61
+		summarizeBy: none
+		sourceColumn: IS_PAID_CHANNEL
+
+		annotation SummarizationSetBy = User
+
+	partition Channel = m
+		mode: import
+		source =
+				let
+				    Source = StreamPulse{[Name = "MARTS", Kind = "Schema"]}[Data]{[Name = "DIM_CHANNEL", Kind = "Table"]}[Data],
+				    Selected = Table.SelectColumns(Source, {"ACQUISITION_CHANNEL", "IS_PAID_CHANNEL"}),
+				    Typed = Table.TransformColumnTypes(Selected, {{"ACQUISITION_CHANNEL", type text}, {"IS_PAID_CHANNEL", type logical}})
+				in
+				    Typed
+

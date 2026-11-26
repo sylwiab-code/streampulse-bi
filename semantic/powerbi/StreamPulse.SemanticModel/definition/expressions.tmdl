@@ -1,0 +1,45 @@
+/// Snowflake account host, for example <account>.snowflakecomputing.com. The repository keeps a placeholder; set the real host with connection.py (README).
+expression SnowflakeServer = "ACCOUNT.snowflakecomputing.com" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 2f951c3d-ce9d-484b-8f43-15a7094cd31d
+
+	annotation PBI_ResultType = Text
+
+/// Snowflake database of the environment.
+expression SnowflakeDatabase = "STREAMPULSE_DEV" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 4376e138-43c9-46d0-ba34-7f43aff898a3
+
+	annotation PBI_ResultType = Text
+
+/// Snowflake warehouse for reporting queries.
+expression SnowflakeWarehouse = "WH_REPORT_DEV" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 84209eb5-ac4f-44f8-9fc3-271f88959c08
+
+	annotation PBI_ResultType = Text
+
+/// Snowflake role for reporting (read-only on MARTS and KPI).
+expression SnowflakeRole = "REPORTER_DEV" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: ef0564d8-0410-49c3-a666-83e98e53cdf1
+
+	annotation PBI_ResultType = Text
+
+/// The environment's Snowflake database; every table reads its schema and table from here.
+expression StreamPulse =
+		let
+		    Source = Snowflake.Databases(SnowflakeServer, SnowflakeWarehouse, [Role = SnowflakeRole, Implementation = "2.0"]),
+		    Database = Source{[Name = SnowflakeDatabase, Kind = "Database"]}[Data]
+		in
+		    Database
+	lineageTag: 5a060c08-0a76-4c10-a4f5-b06a762eb1e2
+
+/// Incremental refresh: start of the loaded range (inclusive). Power BI Desktop loads this range; the service replaces it with its partition boundaries.
+expression RangeStart = #datetime(2024, 1, 1, 0, 0, 0) meta [IsParameterQuery=true, Type="DateTime", IsParameterQueryRequired=true]
+	lineageTag: 34099c60-f129-435a-b636-c5a61499fa14
+
+	annotation PBI_ResultType = DateTime
+
+/// Incremental refresh: end of the loaded range (exclusive).
+expression RangeEnd = #datetime(2028, 1, 1, 0, 0, 0) meta [IsParameterQuery=true, Type="DateTime", IsParameterQueryRequired=true]
+	lineageTag: bb1a98f5-4d09-4ace-b615-b2fc48c02e0f
+
+	annotation PBI_ResultType = DateTime
+

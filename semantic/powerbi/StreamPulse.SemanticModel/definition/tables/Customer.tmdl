@@ -1,0 +1,108 @@
+/// Customers without PII (dim_customer): market, acquisition, cohort, and the repeat-trial flag. Facts at customer grain reach Market through this table.
+table Customer
+	lineageTag: cc770448-555d-473e-9e8f-79e0e64cee29
+
+	/// Customer key.
+	column customer_id
+		dataType: int64
+		isHidden
+		isKey
+		formatString: 0
+		isAvailableInMdx: false
+		lineageTag: 52ed466a-aea9-4583-8518-025b69a1f8a7
+		summarizeBy: none
+		sourceColumn: CUSTOMER_ID
+
+		annotation SummarizationSetBy = User
+
+	/// Market key.
+	column market_code
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 67a4f622-7325-4345-8cf7-08dd5c0f9d30
+		summarizeBy: none
+		sourceColumn: MARKET_CODE
+
+		annotation SummarizationSetBy = User
+
+	/// Acquisition channel key.
+	column acquisition_channel
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: a72469cb-4a27-4249-9a80-ab731b265a92
+		summarizeBy: none
+		sourceColumn: ACQUISITION_CHANNEL
+
+		annotation SummarizationSetBy = User
+
+	/// Acquisition campaign key (paid channels only).
+	column campaign_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		isAvailableInMdx: false
+		lineageTag: c7d462b4-8bf3-43cd-a119-9d6545320055
+		summarizeBy: none
+		sourceColumn: CAMPAIGN_ID
+
+		annotation SummarizationSetBy = User
+
+	/// Sign-up day.
+	column 'Signup Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: c2a34b4d-efcb-4c32-bd08-735035d3063d
+		summarizeBy: none
+		sourceColumn: SIGNUP_DATE
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation SummarizationSetBy = User
+
+	/// Day of the first successful payment; blank if never paid.
+	column 'First Paid Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 81fc354f-0916-4701-9879-11a6cf4b2027
+		summarizeBy: none
+		sourceColumn: FIRST_PAID_DATE
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation SummarizationSetBy = User
+
+	/// Month of the first successful payment (retention cohort).
+	column 'Cohort Month'
+		dataType: dateTime
+		formatString: mmm yyyy
+		lineageTag: fdd5f928-37a7-43d8-8330-76b60253ef82
+		summarizeBy: none
+		sourceColumn: COHORT_MONTH
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation SummarizationSetBy = User
+
+	/// An earlier customer with the same normalized email had an expired trial before this sign-up.
+	column 'Is Repeat Trial'
+		dataType: boolean
+		lineageTag: a0635ca8-6bf6-41ad-8b04-e3c9613c5d43
+		summarizeBy: none
+		sourceColumn: IS_REPEAT_TRIAL
+
+		annotation SummarizationSetBy = User
+
+	partition Customer = m
+		mode: import
+		source =
+				let
+				    Source = StreamPulse{[Name = "MARTS", Kind = "Schema"]}[Data]{[Name = "DIM_CUSTOMER", Kind = "Table"]}[Data],
+				    Selected = Table.SelectColumns(Source, {"CUSTOMER_ID", "MARKET_CODE", "ACQUISITION_CHANNEL", "CAMPAIGN_ID", "SIGNUP_DATE", "FIRST_PAID_DATE", "COHORT_MONTH", "IS_REPEAT_TRIAL"}),
+				    Typed = Table.TransformColumnTypes(Selected, {{"CUSTOMER_ID", Int64.Type}, {"MARKET_CODE", type text}, {"ACQUISITION_CHANNEL", type text}, {"CAMPAIGN_ID", Int64.Type}, {"SIGNUP_DATE", type date}, {"FIRST_PAID_DATE", type date}, {"COHORT_MONTH", type date}, {"IS_REPEAT_TRIAL", type logical}})
+				in
+				    Typed
+
+	annotation BestPracticeAnalyzer_IgnoreRules = {"RuleIDs":["SNOWFLAKE_SCHEMA_ARCHITECTURE"]}
+

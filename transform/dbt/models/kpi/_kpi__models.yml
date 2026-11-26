@@ -372,6 +372,8 @@ models:
     columns:
       - name: date_day
         description: Day.
+      - name: market_code
+        description: Market (always DE; lets reports filter the local view like global models).
       - name: plan_id
         description: Plan.
       - name: active_subscribers

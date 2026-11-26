@@ -37,6 +37,8 @@ Use this list when reviewing a pull request, in addition to the checklist in the
 
 ## Power BI
 
-- Measures have business names, display folders, descriptions, and format strings.
-- BPA is clean, or the exception is documented.
+- Measures have business names, display folders, descriptions, and format strings ([semantic-model.md](semantic-model.md)).
+- BPA is clean, or the exception is documented in the standard.
+- RLS changes were tested with "View as" for a mapped user, an unmapped user, and a user with several markets, against Snowflake numbers.
+- The Snowflake host in `expressions.tmdl` is the placeholder.
 - Screenshots are attached for report changes.

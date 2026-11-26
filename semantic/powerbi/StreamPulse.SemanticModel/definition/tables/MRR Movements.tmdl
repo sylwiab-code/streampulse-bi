@@ -1,0 +1,104 @@
+/// Monthly MRR movements per customer (fct_mrr_movements): new, reactivation, expansion, contraction, churn, and fx_effect, which makes the EUR bridge reconcile.
+table 'MRR Movements'
+	lineageTag: e0f5d9ec-3c83-464a-ae7c-a717db2f294d
+
+	/// Sum of MRR changes in EUR. Over all movement types, including fx_effect, it equals closing minus opening MRR.
+	measure 'MRR Change (EUR)' = SUM ( 'MRR Movements'[mrr_change_eur] )
+		formatString: \€#,0
+		displayFolder: MRR Movements
+		lineageTag: 0d83fc4b-64d7-4988-ac2d-3b4f4b30cd83
+
+	/// Sum of MRR changes in local currency (fx_effect is 0). Blank unless one currency is in context.
+	measure 'MRR Change (Local Currency)' = IF ( HASONEVALUE ( 'Market'[Currency Code] ), SUM ( 'MRR Movements'[mrr_change_local] ) )
+		displayFolder: MRR Movements
+		lineageTag: c8b60c67-fdd8-4ee9-8a88-2edc8e080e06
+
+		formatStringDefinition = "#,0 """ & SELECTEDVALUE ( 'Market'[Currency Code] ) & """"
+
+	/// Distinct customers with an MRR movement in the period.
+	measure 'MRR Movement Customers' = DISTINCTCOUNT ( 'MRR Movements'[customer_id] )
+		formatString: #,0
+		displayFolder: MRR Movements
+		lineageTag: 3c5dd391-ac67-4312-99e1-3e37fdc10c64
+
+	/// Month (first day).
+	column calendar_month
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		isAvailableInMdx: false
+		lineageTag: 219e8da5-4304-40ef-8d62-0cb858679018
+		summarizeBy: none
+		sourceColumn: CALENDAR_MONTH
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation SummarizationSetBy = User
+
+	/// Customer key.
+	column customer_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		isAvailableInMdx: false
+		lineageTag: 6bbe00be-c074-4374-b8ae-2434c24ab360
+		summarizeBy: none
+		sourceColumn: CUSTOMER_ID
+
+		annotation SummarizationSetBy = User
+
+	/// new, reactivation, expansion, contraction, churn, or fx_effect.
+	column 'Movement Type'
+		dataType: string
+		lineageTag: ccb37f13-8352-4cda-91f4-6d31a5f7de23
+		summarizeBy: none
+		sourceColumn: MOVEMENT_TYPE
+		sortByColumn: movement_type_rank
+
+		annotation SummarizationSetBy = User
+
+	/// Bridge order of the movement type (new first, fx_effect last).
+	column movement_type_rank
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: f1a942e2-799d-4103-93e4-67b1eba9f18a
+		summarizeBy: none
+		sourceColumn: MOVEMENT_TYPE_RANK
+
+		annotation SummarizationSetBy = User
+
+	/// MRR change in local currency.
+	column mrr_change_local
+		dataType: decimal
+		isHidden
+		formatString: #,0.00
+		isAvailableInMdx: false
+		lineageTag: 9e9eeb88-f173-469d-a92a-0fa029167503
+		summarizeBy: none
+		sourceColumn: MRR_CHANGE_LOCAL
+
+		annotation SummarizationSetBy = User
+
+	/// MRR change in EUR at the month-end rate.
+	column mrr_change_eur
+		dataType: decimal
+		isHidden
+		formatString: #,0.00
+		isAvailableInMdx: false
+		lineageTag: 5608ba89-11ac-4d28-a492-863cedf5a7ca
+		summarizeBy: none
+		sourceColumn: MRR_CHANGE_EUR
+
+		annotation SummarizationSetBy = User
+
+	partition 'MRR Movements' = m
+		mode: import
+		source =
+				let
+				    Source = StreamPulse{[Name = "MARTS", Kind = "Schema"]}[Data]{[Name = "FCT_MRR_MOVEMENTS", Kind = "Table"]}[Data],
+				    Selected = Table.SelectColumns(Source, {"CALENDAR_MONTH", "CUSTOMER_ID", "MOVEMENT_TYPE", "MOVEMENT_TYPE_RANK", "MRR_CHANGE_LOCAL", "MRR_CHANGE_EUR"}),
+				    Typed = Table.TransformColumnTypes(Selected, {{"CALENDAR_MONTH", type date}, {"CUSTOMER_ID", Int64.Type}, {"MOVEMENT_TYPE", type text}, {"MOVEMENT_TYPE_RANK", Int64.Type}, {"MRR_CHANGE_LOCAL", Currency.Type}, {"MRR_CHANGE_EUR", Currency.Type}})
+				in
+				    Typed
+

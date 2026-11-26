@@ -1,0 +1,111 @@
+/// Monthly subscriber churn per market, voluntary and involuntary (kpi_churn_monthly).
+table Churn
+	lineageTag: b79b039c-b2eb-49f6-bb01-e4b39c30129d
+
+	/// Subscriptions that churned in the period (voluntary and involuntary). Expired trials are not churn.
+	measure 'Churned Subscribers' = SUM ( Churn[churned_subscribers] )
+		formatString: #,0
+		displayFolder: Churn
+		lineageTag: 910fd153-259b-4457-ac30-e1aa4b6aa538
+
+	/// Voluntary churn: the subscriber cancelled; churn date is the end of the paid period.
+	measure 'Voluntary Churn' = SUM ( Churn[churned_voluntary] )
+		formatString: #,0
+		displayFolder: Churn
+		lineageTag: 4f07c2a0-df1f-4209-ba2f-890f03a111ef
+
+	/// Involuntary churn: payment retries failed; churn date is the last failed retry.
+	measure 'Involuntary Churn' = SUM ( Churn[churned_involuntary] )
+		formatString: #,0
+		displayFolder: Churn
+		lineageTag: 35add288-be03-4e9f-9ba9-03e2e193beda
+
+	/// Churned subscribers / paid subscribers active on the first day of each month. For one month this is the KPI definition; over several months it is the average monthly rate weighted by the starting base. Not meaningful in the launch month (November 2024).
+	measure 'Monthly Churn Rate' = DIVIDE ( SUM ( Churn[churned_subscribers] ), SUM ( Churn[active_at_month_start] ) )
+		formatString: #,0.0%;-#,0.0%;#,0.0%
+		displayFolder: Churn
+		lineageTag: 7f9c16cc-3d66-40c4-95f4-a17b8ef85c14
+
+	/// Month (first day).
+	column calendar_month
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		isAvailableInMdx: false
+		lineageTag: 84bcfd02-11ad-4f01-8deb-ed5e182645fd
+		summarizeBy: none
+		sourceColumn: CALENDAR_MONTH
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation SummarizationSetBy = User
+
+	/// Market key.
+	column market_code
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 395fe9f4-fb64-425c-81d2-dee037899a95
+		summarizeBy: none
+		sourceColumn: MARKET_CODE
+
+		annotation SummarizationSetBy = User
+
+	/// Paid subscriptions active on the first day of the month.
+	column active_at_month_start
+		dataType: int64
+		isHidden
+		formatString: #,0
+		isAvailableInMdx: false
+		lineageTag: 41c35fd5-5885-4d3c-a505-15a51fa4c510
+		summarizeBy: none
+		sourceColumn: ACTIVE_AT_MONTH_START
+
+		annotation SummarizationSetBy = User
+
+	/// Voluntary churn in the month.
+	column churned_voluntary
+		dataType: int64
+		isHidden
+		formatString: #,0
+		isAvailableInMdx: false
+		lineageTag: 6fb9290b-f6ba-4882-bec6-456b3c651feb
+		summarizeBy: none
+		sourceColumn: CHURNED_VOLUNTARY
+
+		annotation SummarizationSetBy = User
+
+	/// Involuntary churn in the month.
+	column churned_involuntary
+		dataType: int64
+		isHidden
+		formatString: #,0
+		isAvailableInMdx: false
+		lineageTag: 3f3ebeaf-5487-4463-a9fc-c4ecefa873d3
+		summarizeBy: none
+		sourceColumn: CHURNED_INVOLUNTARY
+
+		annotation SummarizationSetBy = User
+
+	/// All churn in the month.
+	column churned_subscribers
+		dataType: int64
+		isHidden
+		formatString: #,0
+		isAvailableInMdx: false
+		lineageTag: 36caa933-4228-453c-abb2-073a50b2fc01
+		summarizeBy: none
+		sourceColumn: CHURNED_SUBSCRIBERS
+
+		annotation SummarizationSetBy = User
+
+	partition Churn = m
+		mode: import
+		source =
+				let
+				    Source = StreamPulse{[Name = "KPI", Kind = "Schema"]}[Data]{[Name = "KPI_CHURN_MONTHLY", Kind = "Table"]}[Data],
+				    Selected = Table.SelectColumns(Source, {"CALENDAR_MONTH", "MARKET_CODE", "ACTIVE_AT_MONTH_START", "CHURNED_VOLUNTARY", "CHURNED_INVOLUNTARY", "CHURNED_SUBSCRIBERS"}),
+				    Typed = Table.TransformColumnTypes(Selected, {{"CALENDAR_MONTH", type date}, {"MARKET_CODE", type text}, {"ACTIVE_AT_MONTH_START", Int64.Type}, {"CHURNED_VOLUNTARY", Int64.Type}, {"CHURNED_INVOLUNTARY", Int64.Type}, {"CHURNED_SUBSCRIBERS", Int64.Type}})
+				in
+				    Typed
+

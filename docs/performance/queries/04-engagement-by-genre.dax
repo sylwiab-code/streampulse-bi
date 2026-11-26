@@ -1,0 +1,10 @@
+// Engagement: viewers and watch hours per subscriber by quarter, genre, and device.
+EVALUATE
+SUMMARIZECOLUMNS (
+    'Date'[Year],
+    'Date'[Quarter],
+    'Content'[Genre],
+    'Viewing Sessions'[Device Type],
+    "Viewers", [Viewers],
+    "Watch Hours per Subscriber", [Watch Hours per Subscriber]
+)

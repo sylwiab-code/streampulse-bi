@@ -50,7 +50,7 @@ Stack: Python (uv), Snowflake, Liquibase, dbt, Airflow (Astro CLI, Cosmos), Powe
 - Changelogs per object type; one logical change per changeset; include rollback where possible; contexts per environment.
 
 ### Power BI (PBIP)
-- TMDL: NO TMDL-level comments (`///` or `//` outside expressions are not accepted). Use the `description` property instead. Comments only inside DAX or M expressions.
+- TMDL: `///` directly above an object's declaration is its description (the `description:` property is not accepted); every table, column, measure, and calculation item has one. No other comments: `//` only inside DAX or M expressions. Full rules: `docs/standards/semantic-model.md`.
 - Measures: clear business names, display folders, descriptions, format strings.
 - Prefer pre-calculated KPIs from dbt; DAX for time intelligence, ratios at query grain, and what-if.
 - Keep BPA clean; document any accepted exception.

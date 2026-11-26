@@ -1,0 +1,9 @@
+// Executive overview: subscribers, MRR, and ARPU per month and market.
+EVALUATE
+SUMMARIZECOLUMNS (
+    'Date'[Month],
+    Market[Market],
+    "Active Subscribers", [Active Subscribers],
+    "MRR (EUR)", [MRR (EUR)],
+    "ARPU (EUR)", [ARPU (EUR)]
+)

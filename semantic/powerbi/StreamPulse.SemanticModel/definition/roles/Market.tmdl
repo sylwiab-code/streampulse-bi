@@ -1,0 +1,15 @@
+/// Market users: only the markets mapped to the signed-in user in Security Market Access (dbt seed security_market_access). Users without a mapping see no market data.
+role Market
+	modelPermission: read
+
+	tablePermission Market =
+			'Market'[Market Code]
+			    IN CALCULATETABLE (
+			        VALUES ( 'Security Market Access'[Market Code] ),
+			        'Security Market Access'[User Principal Name] = USERPRINCIPALNAME ()
+			    )
+
+	tablePermission 'Security Market Access' = 'Security Market Access'[User Principal Name] = USERPRINCIPALNAME ()
+
+	annotation PBI_Id = e1890a67e304457cbfd7fa22570f576e
+

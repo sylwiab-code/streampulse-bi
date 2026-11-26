@@ -1,0 +1,142 @@
+/// Trial-to-paid conversion by trial start month, market, channel, and campaign (kpi_trial_conversion_monthly).
+table 'Trial Conversion'
+	lineageTag: 9d83f83e-f94f-469a-8991-43afc35ba2ea
+
+	/// Trials started in the period (by trial start month).
+	measure 'Trials Started' = SUM ( 'Trial Conversion'[trials_started] )
+		formatString: #,0
+		displayFolder: Trials
+		lineageTag: c19e4bfe-f32f-45bb-94e8-795af2a7577b
+
+	/// Trials started in the period that converted to paid.
+	measure 'Trials Converted' = SUM ( 'Trial Conversion'[trials_converted] )
+		formatString: #,0
+		displayFolder: Trials
+		lineageTag: 58d363cf-0226-40cd-afb4-d1ce1321a21b
+
+	/// Trials started in the period that expired without conversion.
+	measure 'Trials Expired' = SUM ( 'Trial Conversion'[trials_expired] )
+		formatString: #,0
+		displayFolder: Trials
+		lineageTag: f2dd6226-ef13-47d8-9594-5ebeae582b9c
+
+	/// Trials started in the period that are still running.
+	measure 'Open Trials' = SUM ( 'Trial Conversion'[trials_open] )
+		formatString: #,0
+		displayFolder: Trials
+		lineageTag: 47df4550-0a82-4473-be0a-2f8154f09989
+
+	/// Trials converted / trials started, by trial start month. Open trials lower the latest month's rate until they end.
+	measure 'Trial Conversion Rate' = DIVIDE ( SUM ( 'Trial Conversion'[trials_converted] ), SUM ( 'Trial Conversion'[trials_started] ) )
+		formatString: #,0.0%;-#,0.0%;#,0.0%
+		displayFolder: Trials
+		lineageTag: ce287119-777a-47d5-93ae-0c3779ee4db9
+
+	/// Month the trial started (first day).
+	column trial_start_month
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		isAvailableInMdx: false
+		lineageTag: 0f5d4f29-fe5d-4393-a777-84b304798185
+		summarizeBy: none
+		sourceColumn: TRIAL_START_MONTH
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation SummarizationSetBy = User
+
+	/// Market key.
+	column market_code
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 59fff561-1ac7-4f30-ad11-639ee4d295ed
+		summarizeBy: none
+		sourceColumn: MARKET_CODE
+
+		annotation SummarizationSetBy = User
+
+	/// Acquisition channel key.
+	column acquisition_channel
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 60b21337-098b-49dc-b1ee-ec9bdf135485
+		summarizeBy: none
+		sourceColumn: ACQUISITION_CHANNEL
+
+		annotation SummarizationSetBy = User
+
+	/// Acquisition campaign key (paid channels only).
+	column campaign_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		isAvailableInMdx: false
+		lineageTag: 95a167c5-5093-4b6c-9f94-9d3fc8852b38
+		summarizeBy: none
+		sourceColumn: CAMPAIGN_ID
+
+		annotation SummarizationSetBy = User
+
+	/// Trials started.
+	column trials_started
+		dataType: int64
+		isHidden
+		formatString: #,0
+		isAvailableInMdx: false
+		lineageTag: ba5c11e3-7ece-4e32-bc97-cf7190700f7c
+		summarizeBy: none
+		sourceColumn: TRIALS_STARTED
+
+		annotation SummarizationSetBy = User
+
+	/// Trials converted to paid.
+	column trials_converted
+		dataType: int64
+		isHidden
+		formatString: #,0
+		isAvailableInMdx: false
+		lineageTag: 639de568-407a-4cdf-97b9-1c5caac4dc7e
+		summarizeBy: none
+		sourceColumn: TRIALS_CONVERTED
+
+		annotation SummarizationSetBy = User
+
+	/// Trials expired without conversion.
+	column trials_expired
+		dataType: int64
+		isHidden
+		formatString: #,0
+		isAvailableInMdx: false
+		lineageTag: 9f344f43-e722-47ee-b14c-873dee00db0f
+		summarizeBy: none
+		sourceColumn: TRIALS_EXPIRED
+
+		annotation SummarizationSetBy = User
+
+	/// Trials still running.
+	column trials_open
+		dataType: int64
+		isHidden
+		formatString: #,0
+		isAvailableInMdx: false
+		lineageTag: b677347c-daf7-4697-af39-a5e0bfad3d61
+		summarizeBy: none
+		sourceColumn: TRIALS_OPEN
+
+		annotation SummarizationSetBy = User
+
+	partition 'Trial Conversion' = m
+		mode: import
+		source =
+				let
+				    Source = StreamPulse{[Name = "KPI", Kind = "Schema"]}[Data]{[Name = "KPI_TRIAL_CONVERSION_MONTHLY", Kind = "Table"]}[Data],
+				    Selected = Table.SelectColumns(Source, {"TRIAL_START_MONTH", "MARKET_CODE", "ACQUISITION_CHANNEL", "CAMPAIGN_ID", "TRIALS_STARTED", "TRIALS_CONVERTED", "TRIALS_EXPIRED", "TRIALS_OPEN"}),
+				    Typed = Table.TransformColumnTypes(Selected, {{"TRIAL_START_MONTH", type date}, {"MARKET_CODE", type text}, {"ACQUISITION_CHANNEL", type text}, {"CAMPAIGN_ID", Int64.Type}, {"TRIALS_STARTED", Int64.Type}, {"TRIALS_CONVERTED", Int64.Type}, {"TRIALS_EXPIRED", Int64.Type}, {"TRIALS_OPEN", Int64.Type}})
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table
+
