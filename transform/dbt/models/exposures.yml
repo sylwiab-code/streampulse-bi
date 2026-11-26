@@ -1,7 +1,36 @@
 version: 2
 
-# Power BI reports (built in Phase 6) and the KPI models they read; URLs follow in Phase 7.
+# The Power BI semantic model (Phase 5, ADR-011) and the reports built on it (Phase 6), with
+# the dbt models each one reads through the model; URLs follow in Phase 7.
 exposures:
+  - name: powerbi_semantic_model
+    label: StreamPulse semantic model
+    type: application
+    maturity: medium
+    description: >
+      Power BI Import model in semantic/powerbi (TMDL). Row-level security reads the
+      security_market_access seed.
+    owner:
+      name: Global BI
+    depends_on:
+      - ref('dim_date')
+      - ref('dim_market')
+      - ref('dim_plan')
+      - ref('dim_channel')
+      - ref('dim_campaign')
+      - ref('dim_content')
+      - ref('dim_customer')
+      - ref('kpi_subscribers_daily')
+      - ref('kpi_churn_monthly')
+      - ref('kpi_trial_conversion_monthly')
+      - ref('kpi_cohort_retention')
+      - ref('kpi_cac_ltv_monthly')
+      - ref('kpi_de_mrr_net_of_vat')
+      - ref('fct_mrr_movements')
+      - ref('fct_payments')
+      - ref('fct_viewing_sessions')
+      - ref('security_market_access')
+
   - name: executive_report
     label: Executive overview
     type: dashboard
@@ -11,9 +40,8 @@ exposures:
       name: Global BI
     depends_on:
       - ref('kpi_subscribers_daily')
-      - ref('kpi_mrr_movements_monthly')
+      - ref('fct_mrr_movements')
       - ref('kpi_churn_monthly')
-      - ref('kpi_arpu_monthly')
 
   - name: churn_report
     label: Churn and retention
@@ -35,8 +63,7 @@ exposures:
     owner:
       name: Global BI
     depends_on:
-      - ref('kpi_engagement_monthly')
-      - ref('kpi_content_performance_monthly')
+      - ref('fct_viewing_sessions')
       - ref('dim_content')
 
   - name: market_report
