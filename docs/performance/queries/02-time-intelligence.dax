@@ -1,0 +1,9 @@
+// Time intelligence: current, previous year, and YoY % of MRR and viewers per month.
+EVALUATE
+SUMMARIZECOLUMNS (
+    'Date'[Month],
+    'Time Intelligence'[Time Calculation],
+    TREATAS ( { "Current", "PY", "YoY %" }, 'Time Intelligence'[Time Calculation] ),
+    "MRR (EUR)", [MRR (EUR)],
+    "Viewers", [Viewers]
+)
